@@ -4,6 +4,20 @@ import { api } from "../utils/api"
 
 const sColor = s => ({ Completed:"badge-green", Pending:"badge-gold", Cancelled:"badge-red", Confirmed:"badge-blue", "In Progress":"badge-purple" }[s] || "badge-gray")
 
+// ─── Helper ───────────────────────────────────────────────────────────────────
+
+const toArray = (val) => {
+  if (Array.isArray(val)) return val
+  if (typeof val === "string" && val.trim()) return val.split(",").map(s => s.trim())
+  return []
+}
+
+const toGenreString = (val) => {
+  if (Array.isArray(val)) return val.join(", ")
+  if (typeof val === "string") return val
+  return ""
+}
+
 export default function DJDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -18,19 +32,33 @@ export default function DJDetail() {
 
   const load = async () => {
     setLoading(true)
-    const res = await api.getDJ(id)
-    if (res.success) {
-      setDJ(res.data)
-      setEdit({ ...res.data, genres: (res.data.genres||[]).join(", ") })
+    try {
+      const res = await api.getDJ(id)
+      if (res.success) {
+        setDJ(res.data)
+        // ← fix: use toGenreString so .join never runs on a string
+        setEdit({ ...res.data, genres: toGenreString(res.data.genres) })
+      } else {
+        setErr(res.message || "Failed to load DJ")
+      }
+    } catch (e) {
+      setErr("Failed to load DJ")
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   useEffect(() => { load() }, [id])
 
   const saveInfo = async () => {
     setSaving(true); setMsg(""); setErr("")
-    const payload = { ...edit, genres: edit.genres.split(",").map(g => g.trim()).filter(Boolean), hourlyRate: parseFloat(edit.hourlyRate), latitude: parseFloat(edit.latitude), longitude: parseFloat(edit.longitude) }
+    const payload = {
+      ...edit,
+      genres: toArray(edit.genres),  // ← safely parse back to array
+      hourlyRate: parseFloat(edit.hourlyRate) || 0,
+      latitude: parseFloat(edit.latitude) || 0,
+      longitude: parseFloat(edit.longitude) || 0,
+    }
     const res = await api.updateDJ(id, payload)
     if (res.success) { setMsg("DJ updated!"); setDJ(d => ({ ...d, ...res.data })) }
     else setErr(res.message || "Error")
@@ -52,13 +80,14 @@ export default function DJDetail() {
   }
 
   const deleteDJ = async () => {
-    if (!confirm("Delete this DJ and all related bookings?")) return
+    if (!window.confirm("Delete this DJ and all related bookings?")) return
     const res = await api.deleteDJ(id)
     if (res.success) navigate("/djs")
+    else setErr(res.message || "Delete failed")
   }
 
   if (loading) return <div className="loading"><div className="spinner"/><p>Loading DJ...</p></div>
-  if (!dj) return <div className="alert alert-error">DJ not found</div>
+  if (!dj) return <div className="alert alert-error">{err || "DJ not found"}</div>
 
   const f = field => ({ value: edit[field] ?? "", onChange: e => setEdit({ ...edit, [field]: e.target.value }) })
 
@@ -68,11 +97,11 @@ export default function DJDetail() {
         <button className="btn btn-ghost btn-sm" onClick={() => navigate("/djs")}>Back to DJs</button>
         <div style={{ flex:1 }}>
           <h2 style={{ fontSize:24, marginBottom:6 }}>{dj.name}</h2>
-          <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+          <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
             <span className={"badge "+(dj.isAvailable?"badge-green":"badge-red")}>{dj.isAvailable?"Available":"Offline"}</span>
-            <span style={{ color:"var(--gold)", fontSize:13 }}>Rs.{dj.hourlyRate}/hr</span>
+            <span style={{ color:"var(--gold)", fontSize:13 }}>₹{dj.hourlyRate}/hr</span>
             <span style={{ color:"var(--text3)", fontSize:13 }}>|</span>
-            <span style={{ color:"var(--gold)" }}>* {dj.ratingAverage||0} ({dj.ratingCount||0} reviews)</span>
+            <span style={{ color:"var(--gold)" }}>★ {dj.ratingAverage||0} ({dj.ratingCount||0} reviews)</span>
             {dj.locationCity && <span style={{ color:"var(--text2)", fontSize:13 }}>{dj.locationCity}, {dj.locationState}</span>}
           </div>
         </div>
@@ -86,7 +115,12 @@ export default function DJDetail() {
 
       {dj.bookingStats && (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:24 }}>
-          {[{label:"Total",val:dj.bookingStats.total,color:"var(--glow)"},{label:"Completed",val:dj.bookingStats.completed,color:"var(--green)"},{label:"Pending",val:dj.bookingStats.pending,color:"var(--gold)"},{label:"Cancelled",val:dj.bookingStats.cancelled,color:"var(--red)"}].map(s => (
+          {[
+            { label:"Total",     val:dj.bookingStats.total,     color:"var(--glow)"  },
+            { label:"Completed", val:dj.bookingStats.completed, color:"var(--green)" },
+            { label:"Pending",   val:dj.bookingStats.pending,   color:"var(--gold)"  },
+            { label:"Cancelled", val:dj.bookingStats.cancelled, color:"var(--red)"   },
+          ].map(s => (
             <div key={s.label} className="card" style={{ padding:18 }}>
               <div style={{ fontSize:11, color:"var(--text3)", textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>{s.label}</div>
               <div style={{ fontSize:30, fontWeight:700, color:s.color }}>{s.val}</div>
@@ -114,14 +148,34 @@ export default function DJDetail() {
               <div className="form-group"><label>DJ Name</label><input className="input" {...f("name")} /></div>
               <div className="form-group"><label>Hourly Rate</label><input className="input" type="number" {...f("hourlyRate")} /></div>
               <div className="form-group"><label>Min Hours</label><input className="input" type="number" {...f("minimumHours")} /></div>
-              <div className="form-group"><label>Currency</label><select className="input" {...f("currency")}><option value="INR">INR</option><option value="USD">USD</option></select></div>
-              <div className="form-group"><label>Available</label><select className="input" value={edit.isAvailable?"true":"false"} onChange={e => setEdit({...edit,isAvailable:e.target.value==="true"})}><option value="true">Yes</option><option value="false">No</option></select></div>
+              <div className="form-group">
+                <label>Currency</label>
+                <select className="input" {...f("currency")}>
+                  <option value="INR">INR</option>
+                  <option value="USD">USD</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Available</label>
+                <select className="input" value={edit.isAvailable ? "true" : "false"} onChange={e => setEdit({...edit, isAvailable: e.target.value === "true"})}>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
               <div className="form-group"><label>Rating Avg</label><input className="input" type="number" step="0.1" min="0" max="5" {...f("ratingAverage")} /></div>
               <div className="form-group"><label>Rating Count</label><input className="input" type="number" {...f("ratingCount")} /></div>
             </div>
-            <div className="form-group" style={{ marginBottom:14 }}><label>Description</label><textarea className="input" rows={3} {...f("description")} /></div>
-            <div className="form-group" style={{ marginBottom:16 }}><label>Genres (comma separated)</label><input className="input" {...f("genres")} placeholder="Bollywood, EDM, Hip-Hop" /></div>
-            <button className="btn btn-primary" disabled={saving} onClick={saveInfo}>{saving?"Saving...":"Save Changes"}</button>
+            <div className="form-group" style={{ marginBottom:14 }}>
+              <label>Description</label>
+              <textarea className="input" rows={3} {...f("description")} />
+            </div>
+            <div className="form-group" style={{ marginBottom:16 }}>
+              <label>Genres (comma separated)</label>
+              <input className="input" {...f("genres")} placeholder="Bollywood, EDM, Hip-Hop" />
+            </div>
+            <button className="btn btn-primary" disabled={saving} onClick={saveInfo}>
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
           </div>
         </div>
       )}
@@ -137,7 +191,9 @@ export default function DJDetail() {
               <div className="form-group"><label>Latitude</label><input className="input" type="number" step="any" {...f("latitude")} /></div>
               <div className="form-group"><label>Longitude</label><input className="input" type="number" step="any" {...f("longitude")} /></div>
             </div>
-            <button className="btn btn-primary" disabled={saving} onClick={saveInfo}>{saving?"Saving...":"Update Location"}</button>
+            <button className="btn btn-primary" disabled={saving} onClick={saveInfo}>
+              {saving ? "Saving..." : "Update Location"}
+            </button>
           </div>
         </div>
       )}
@@ -150,7 +206,7 @@ export default function DJDetail() {
               {dj.owner ? (
                 <>
                   <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16, padding:14, background:"var(--raised)", borderRadius:8 }}>
-                    <div style={{ width:42, height:42, borderRadius:"50%", background:"linear-gradient(135deg,var(--glow),var(--glow2))", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, fontWeight:700, color:"#fff" }}>
+                    <div style={{ width:42, height:42, borderRadius:"50%", background:"var(--glow)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, fontWeight:700, color:"#fff" }}>
                       {dj.owner.firstName?.[0]}{dj.owner.lastName?.[0]}
                     </div>
                     <div>
@@ -176,7 +232,9 @@ export default function DJDetail() {
                 <label>New Owner User ID</label>
                 <input className="input" type="number" placeholder="e.g. 5" value={assignUserId} onChange={e => setAssignUserId(e.target.value)} />
               </div>
-              <button className="btn btn-primary" disabled={saving} onClick={assignOwner}>{saving?"Assigning...":"Assign Owner"}</button>
+              <button className="btn btn-primary" disabled={saving} onClick={assignOwner}>
+                {saving ? "Assigning..." : "Assign Owner"}
+              </button>
             </div>
           </div>
         </div>
@@ -187,24 +245,29 @@ export default function DJDetail() {
           <div className="card-header"><h3>All Bookings ({dj.bookings?.length || 0})</h3></div>
           <div className="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>User</th><th>Event</th><th>Date</th><th>Amount</th><th>Status</th><th>Payment</th></tr></thead>
+              <thead>
+                <tr><th>#</th><th>User</th><th>Event</th><th>Date</th><th>Amount</th><th>Status</th><th>Payment</th></tr>
+              </thead>
               <tbody>
                 {!dj.bookings?.length
                   ? <tr><td colSpan={7}><div className="empty"><p>No bookings yet</p></div></td></tr>
                   : dj.bookings.map(b => (
                     <tr key={b.id}>
-                      <td className="mono" style={{color:"var(--text3)"}}>#{b.id}</td>
+                      <td className="mono" style={{ color:"var(--text3)" }}>#{b.id}</td>
                       <td>
-                        <div style={{fontWeight:500}}>{b.user?.firstName} {b.user?.lastName}</div>
+                        <div style={{ fontWeight:500 }}>{b.user?.firstName} {b.user?.lastName}</div>
                         <div className="mono">{b.user?.phone}</div>
                       </td>
                       <td>{b.eventType}</td>
-                      <td style={{color:"var(--text2)",fontSize:12}}>{b.eventDate?new Date(b.eventDate).toLocaleDateString("en-IN"):"—"}</td>
-                      <td style={{color:"var(--gold)",fontWeight:600}}>Rs.{b.totalAmount}</td>
+                      <td style={{ color:"var(--text2)", fontSize:12 }}>{b.eventDate ? new Date(b.eventDate).toLocaleDateString("en-IN") : "—"}</td>
+                      <td style={{ color:"var(--gold)", fontWeight:600 }}>₹{b.totalAmount}</td>
                       <td><span className={"badge "+sColor(b.status)}>{b.status}</span></td>
-                      <td><span className={"badge "+(b.paymentStatus==="Paid"?"badge-green":b.paymentStatus==="Refunded"?"badge-orange":"badge-gold")}>{b.paymentStatus}</span></td>
+                      <td>
+                        <span className={"badge "+(b.paymentStatus==="Paid"?"badge-green":b.paymentStatus==="Refunded"?"badge-orange":"badge-gold")}>{b.paymentStatus}</span>
+                      </td>
                     </tr>
-                  ))}
+                  ))
+                }
               </tbody>
             </table>
           </div>

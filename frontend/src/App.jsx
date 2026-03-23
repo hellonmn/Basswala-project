@@ -9,6 +9,8 @@ import DJs from './pages/DJs'
 import DJDetail from './pages/DJDetail'
 import Bookings from './pages/Bookings'
 import Reports from './pages/Reports'
+import DJsManagement from './pages/DJsManagement'
+import BookingAmountSettings from './pages/BookingAmountSettings'
 
 function Guard({ children }) {
   const { admin, loading } = useAuth()
@@ -33,9 +35,11 @@ function AppRoutes() {
       <Route path="/users" element={<Guard><Users /></Guard>} />
       <Route path="/users/:id" element={<Guard><UserDetail /></Guard>} />
       <Route path="/djs" element={<Guard><DJs /></Guard>} />
+      <Route path="/djs2" element={<Guard><DJsManagement /></Guard>} />
       <Route path="/djs/:id" element={<Guard><DJDetail /></Guard>} />
       <Route path="/bookings" element={<Guard><Bookings /></Guard>} />
       <Route path="/reports" element={<Guard><Reports /></Guard>} />
+      <Route path="/settings/booking-amount" element={<BookingAmountSettings />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )

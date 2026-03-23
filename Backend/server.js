@@ -38,6 +38,7 @@ app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/auth', require('./routes/firebase-auth'))
 
 // Health check route
 app.get('/health', (req, res) => {
