@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basswala — Captain Login</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --purple: #7c3aed;
+      --purple-dark: #5b21b6;
+      --purple-light: #ede9fe;
+      --orange: #f97316;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-300: #d1d5db;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-900: #111827;
+      --green: #10b981;
+      --red: #ef4444;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 25px 60px rgba(0,0,0,.4);
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      padding: 32px 40px 28px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.15);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .card-header h1 {
+      color: #fff;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+    }
+
+    .card-header p {
+      color: rgba(255,255,255,.75);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .card-body {
+      padding: 32px 36px 36px;
+    }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .step-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gray-300);
+      transition: background .3s, width .3s;
+    }
+
+    .step-dot.active {
+      background: var(--purple);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    .form-group { margin-bottom: 20px; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 8px;
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      border: 2px solid var(--gray-300);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+
+    .input-wrap:focus-within { border-color: var(--purple); }
+
+    .prefix {
+      background: var(--gray-100);
+      color: var(--gray-500);
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      border-right: 2px solid var(--gray-300);
+      white-space: nowrap;
+    }
+
+    .input-wrap input {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 15px;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--gray-900);
+    }
+
+    input[type="text"], input[type="tel"], input[type="number"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--gray-300);
+      border-radius: 12px;
+      font-size: 15px;
+      color: var(--gray-900);
+      transition: border-color .2s;
+      outline: none;
+    }
+
+    input:focus { border-color: var(--purple); }
+
+    .otp-grid {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .otp-grid input {
+      width: 48px;
+      height: 52px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      border: 2px solid var(--gray-300);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .otp-grid input:focus { border-color: var(--purple); }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s, opacity .2s;
+    }
+
+    .btn:active { transform: scale(.98); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(124,58,237,.35);
+    }
+
+    .btn-primary:hover { box-shadow: 0 6px 20px rgba(124,58,237,.5); }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: var(--gray-100);
+      color: var(--gray-700);
+      margin-top: 10px;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 18px;
+      display: none;
+    }
+
+    .alert.error { background: #fef2f2; color: var(--red); border: 1px solid #fca5a5; }
+    .alert.success { background: #f0fdf4; color: var(--green); border: 1px solid #86efac; }
+    .alert.show { display: block; }
+
+    .hint {
+      text-align: center;
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-top: 16px;
+    }
+
+    .hint a { color: var(--purple); cursor: pointer; text-decoration: underline; }
+
+    .timer { font-weight: 700; color: var(--orange); }
+
+    .profile-section h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 4px;
+    }
+
+    .profile-section p {
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-bottom: 20px;
+    }
+
+    #recaptcha-container { margin-bottom: 16px; }
+
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <div class="badge">🎧 Captain Portal</div>
+    <h1>Basswala Captain</h1>
+    <p>Manage your DJs & equipment fleet</p>
+  </div>
+
+  <div class="card-body">
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+    </div>
+
+    <div id="alert" class="alert"></div>
+
+    <!-- Step 1: Phone number -->
+    <div class="step active" id="step-1">
+      <div class="form-group">
+        <label>Mobile Number</label>
+        <div class="input-wrap">
+          <span class="prefix">🇮🇳 +91</span>
+          <input type="tel" id="phone" placeholder="98765 43210" maxlength="10" inputmode="numeric" />
+        </div>
+      </div>
+      <div id="recaptcha-container"></div>
+      <button class="btn btn-primary" id="send-otp-btn" onclick="sendOTP()">
+        Send OTP
+      </button>
+      <p class="hint">New captain? We'll create your account automatically.</p>
+    </div>
+
+    <!-- Step 2: OTP -->
+    <div class="step" id="step-2">
+      <div class="form-group">
+        <label>Enter the 6-digit OTP sent to <span id="phone-display" style="color:var(--purple)"></span></label>
+        <div class="otp-grid">
+          <input type="text" maxlength="1" inputmode="numeric" class="otp-input" />
+          <input type="text" maxlength="1" inputmode="numeric" class="otp-input" />
+          <input type="text" maxlength="1" inputmode="numeric" class="otp-input" />
+          <input type="text" maxlength="1" inputmode="numeric" class="otp-input" />
+          <input type="text" maxlength="1" inputmode="numeric" class="otp-input" />
+          <input type="text" maxlength="1" inputmode="numeric" class="otp-input" />
+        </div>
+      </div>
+      <button class="btn btn-primary" id="verify-otp-btn" onclick="verifyOTP()">
+        Verify & Login
+      </button>
+      <button class="btn btn-ghost" onclick="goBack()">← Change number</button>
+      <p class="hint">
+        Didn't receive OTP?
+        <a id="resend-link" onclick="resendOTP()">Resend</a>
+        <span id="resend-timer" class="timer"></span>
+      </p>
+    </div>
+
+    <!-- Step 3: Complete captain profile (new captains only) -->
+    <div class="step" id="step-3">
+      <div class="profile-section">
+        <h3>🎉 Welcome, Captain!</h3>
+        <p>Complete your profile to start accepting bookings.</p>
+      </div>
+
+      <div class="form-group">
+        <label>Business / Brand Name</label>
+        <input type="text" id="businessName" placeholder="e.g. Beats by Raj" />
+      </div>
+      <div class="form-group">
+        <label>City</label>
+        <input type="text" id="locationCity" placeholder="e.g. Jaipur" />
+      </div>
+      <div class="form-group">
+        <label>Service Radius (km)</label>
+        <input type="number" id="serviceRadius" value="50" min="5" max="500" />
+      </div>
+      <button class="btn btn-primary" onclick="completeProfile()">
+        Start Managing 🚀
+      </button>
+      <button class="btn btn-ghost" onclick="skipProfile()">Skip for now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<script>
+  // ── Firebase Config ─────────────────────────────────────────
+  // Replace with your actual Firebase config
+  const firebaseConfig = {
+    apiKey: "YOUR_FIREBASE_API_KEY",
+    authDomain: "basswala-f4940.firebaseapp.com",
+    projectId: "basswala-f4940",
+    storageBucket: "basswala-f4940.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  const API_URL = 'http://localhost:5000/api';
+  let confirmationResult = null;
+  let resendTimer = null;
+  let authToken = null;
+
+  // ── Alert helpers ───────────────────────────────────────────
+  function showAlert(msg, type = 'error') {
+    const el = document.getElementById('alert');
+    el.textContent = msg;
+    el.className = `alert ${type} show`;
+    setTimeout(() => el.classList.remove('show'), 5000);
+  }
+
+  function setLoading(btnId, loading, text) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.innerHTML = loading ? `<span class="spinner"></span>${text}` : text;
+  }
+
+  // ── Step navigation ─────────────────────────────────────────
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById(`step-${n}`).classList.add('active');
+    document.querySelectorAll('.step-dot').forEach((d, i) => {
+      d.classList.toggle('active', i < n);
+    });
+  }
+
+  function goBack() { showStep(1); }
+
+  // ── Send OTP ────────────────────────────────────────────────
+  async function sendOTP() {
+    const phone = document.getElementById('phone').value.trim();
+    if (!/^\d{10}$/.test(phone)) {
+      return showAlert('Enter a valid 10-digit mobile number.');
+    }
+
+    setLoading('send-otp-btn', true, 'Sending OTP…');
+
+    try {
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+          size: 'invisible',
+          callback: () => {}
+        });
+      }
+
+      confirmationResult = await auth.signInWithPhoneNumber(`+91${phone}`, window.recaptchaVerifier);
+      document.getElementById('phone-display').textContent = `+91 ${phone}`;
+      startResendTimer();
+      showStep(2);
+      // Focus first OTP box
+      setTimeout(() => document.querySelector('.otp-input')?.focus(), 100);
+    } catch (err) {
+      console.error(err);
+      showAlert(err.message || 'Failed to send OTP. Try again.');
+      window.recaptchaVerifier?.clear();
+      window.recaptchaVerifier = null;
+    } finally {
+      setLoading('send-otp-btn', false, 'Send OTP');
+    }
+  }
+
+  // ── OTP input navigation ────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    const inputs = document.querySelectorAll('.otp-input');
+    inputs.forEach((inp, idx) => {
+      inp.addEventListener('input', () => {
+        if (inp.value.length === 1 && idx < inputs.length - 1) inputs[idx + 1].focus();
+      });
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !inp.value && idx > 0) inputs[idx - 1].focus();
+      });
+      // Allow paste of 6 digits
+      inp.addEventListener('paste', e => {
+        const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+        if (pasted.length === 6) {
+          e.preventDefault();
+          inputs.forEach((i, n) => { i.value = pasted[n] || ''; });
+          inputs[5].focus();
+        }
+      });
+    });
+  });
+
+  function getOTP() {
+    return [...document.querySelectorAll('.otp-input')].map(i => i.value).join('');
+  }
+
+  // ── Verify OTP ──────────────────────────────────────────────
+  async function verifyOTP() {
+    const otp = getOTP();
+    if (otp.length !== 6) return showAlert('Enter all 6 digits of the OTP.');
+
+    setLoading('verify-otp-btn', true, 'Verifying…');
+
+    try {
+      const result = await confirmationResult.confirm(otp);
+      const idToken = await result.user.getIdToken();
+      await loginToBackend(idToken);
+    } catch (err) {
+      console.error(err);
+      showAlert(err.code === 'auth/invalid-verification-code'
+        ? 'Incorrect OTP. Please try again.'
+        : err.message || 'Verification failed.');
+    } finally {
+      setLoading('verify-otp-btn', false, 'Verify & Login');
+    }
+  }
+
+  // ── Backend Login ───────────────────────────────────────────
+  async function loginToBackend(idToken) {
+    const res = await fetch(`${API_URL}/captain/auth/firebase-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken })
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'Login failed');
+
+    authToken = data.token;
+    localStorage.setItem('captainToken', data.token);
+    localStorage.setItem('captainUser', JSON.stringify(data.user));
+
+    if (data.isNewCaptain) {
+      showAlert('Account created! Set up your profile.', 'success');
+      showStep(3);
+    } else {
+      showAlert(`Welcome back, Captain! Redirecting…`, 'success');
+      setTimeout(() => { window.location.href = 'captain-dashboard.html'; }, 1500);
+    }
+  }
+
+  // ── Complete profile ────────────────────────────────────────
+  async function completeProfile() {
+    const payload = {
+      businessName: document.getElementById('businessName').value.trim() || undefined,
+      locationCity: document.getElementById('locationCity').value.trim() || undefined,
+      serviceRadiusKm: parseInt(document.getElementById('serviceRadius').value) || 50
+    };
+
+    try {
+      const res = await fetch(`${API_URL}/captain/auth/complete-profile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert('Profile saved!', 'success');
+        setTimeout(() => { window.location.href = 'captain-dashboard.html'; }, 1200);
+      }
+    } catch (e) {
+      showAlert('Could not save profile. You can update it later.');
+      skipProfile();
+    }
+  }
+
+  function skipProfile() {
+    window.location.href = 'captain-dashboard.html';
+  }
+
+  // ── Resend timer ────────────────────────────────────────────
+  function startResendTimer() {
+    const link = document.getElementById('resend-link');
+    const timer = document.getElementById('resend-timer');
+    link.style.display = 'none';
+    let secs = 30;
+    timer.textContent = ` (${secs}s)`;
+    resendTimer = setInterval(() => {
+      secs--;
+      timer.textContent = secs > 0 ? ` (${secs}s)` : '';
+      if (secs <= 0) {
+        clearInterval(resendTimer);
+        link.style.display = 'inline';
+        timer.textContent = '';
+      }
+    }, 1000);
+  }
+
+  async function resendOTP() {
+    document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+    window.recaptchaVerifier?.clear();
+    window.recaptchaVerifier = null;
+    showStep(1);
+    setTimeout(sendOTP, 200);
+  }
+</script>
+</body>
+</html>

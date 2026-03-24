@@ -40,6 +40,14 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/auth', require('./routes/firebase-auth'))
 
+app.use('/api/captain/auth', require('./routes/firebase-captain-auth'));
+ 
+// Captain management routes (DJs, equipment, bookings)
+app.use('/api/captain', require('./routes/captain'));
+ 
+// User-facing services (browse captains, DJs, equipment, create bookings)
+app.use('/api/services', require('./routes/services'));
+
 // Health check route
 app.get('/health', (req, res) => {
   res.status(200).json({

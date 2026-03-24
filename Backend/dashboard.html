@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basswala — Captain Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #0a0a0f;
+      --bg2:       #111118;
+      --bg3:       #1a1a26;
+      --border:    rgba(255,255,255,.07);
+      --accent:    #7b5ea7;
+      --accent2:   #e8612c;
+      --accent3:   #2dd4bf;
+      --text:      #f0eef8;
+      --muted:     #7a7890;
+      --card-glow: rgba(123,94,167,.12);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 240px;
+      min-height: 100vh;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 24px 24px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-mark {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-mark span { color: var(--accent2); }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 12px;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 12px 12px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all .2s;
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+
+    .nav-item.active {
+      background: rgba(123,94,167,.18);
+      color: var(--text);
+      border-left: 2px solid var(--accent);
+    }
+
+    .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--accent2);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .captain-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .captain-info { overflow: hidden; }
+    .captain-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .captain-role { font-size: 11px; color: var(--accent3); }
+
+    /* ── Main ── */
+    .main {
+      margin-left: 240px;
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #6a4e95; transform: translateY(-1px); }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--text); }
+
+    .btn-danger { background: rgba(239,68,68,.15); color: #f87171; border: 1px solid rgba(239,68,68,.2); }
+    .btn-danger:hover { background: rgba(239,68,68,.25); }
+
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    .btn-success { background: rgba(45,212,191,.15); color: var(--accent3); border: 1px solid rgba(45,212,191,.2); }
+
+    /* ── Page content ── */
+    .page-content {
+      padding: 32px;
+      flex: 1;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Stat cards ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .stat-card.s1::before { background: linear-gradient(90deg, var(--accent), transparent); }
+    .stat-card.s2::before { background: linear-gradient(90deg, var(--accent2), transparent); }
+    .stat-card.s3::before { background: linear-gradient(90deg, var(--accent3), transparent); }
+    .stat-card.s4::before { background: linear-gradient(90deg, #f59e0b, transparent); }
+
+    .stat-card:hover { border-color: rgba(255,255,255,.12); }
+
+    .stat-icon { font-size: 24px; margin-bottom: 12px; }
+    .stat-val {
+      font-family: 'Syne', sans-serif;
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label { font-size: 12px; color: var(--muted); }
+    .stat-sub { font-size: 11px; color: var(--accent3); margin-top: 6px; }
+
+    /* ── Section header ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--muted); }
+
+    select.filter-select {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      padding: 12px 20px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 14px 20px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(255,255,255,.02); }
+
+    .td-name { font-weight: 600; color: var(--text); }
+    .td-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .chip-green { background: rgba(45,212,191,.12); color: var(--accent3); border: 1px solid rgba(45,212,191,.2); }
+    .chip-orange { background: rgba(232,97,44,.12); color: #fb923c; border: 1px solid rgba(232,97,44,.2); }
+    .chip-purple { background: rgba(123,94,167,.18); color: #c4b5fd; border: 1px solid rgba(123,94,167,.25); }
+    .chip-red { background: rgba(239,68,68,.1); color: #f87171; border: 1px solid rgba(239,68,68,.15); }
+    .chip-gray { background: rgba(255,255,255,.06); color: var(--muted); border: 1px solid var(--border); }
+    .chip-yellow { background: rgba(245,158,11,.1); color: #fbbf24; border: 1px solid rgba(245,158,11,.2); }
+    .chip-blue { background: rgba(59,130,246,.1); color: #93c5fd; border: 1px solid rgba(59,130,246,.2); }
+
+    .action-row { display: flex; gap: 6px; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-title { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--text); font-size: 18px; margin-bottom: 8px; }
+    .empty-desc { font-size: 14px; max-width: 320px; margin: 0 auto 20px; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp .25s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; }
+
+    .modal-close {
+      background: rgba(255,255,255,.06);
+      border: none;
+      color: var(--muted);
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+
+    .modal-close:hover { background: rgba(255,255,255,.12); color: var(--text); }
+
+    .modal-body { padding: 24px 28px; }
+    .modal-footer {
+      padding: 16px 28px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-select option { background: var(--bg3); }
+
+    /* ── Booking card (map view) ── */
+    .booking-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .booking-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: border-color .2s, transform .15s;
+    }
+
+    .booking-card:hover { border-color: rgba(123,94,167,.35); transform: translateY(-2px); }
+
+    .booking-card-header {
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .booking-id { font-size: 11px; color: var(--muted); }
+    .booking-event { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; margin-top: 2px; }
+
+    .booking-card-body { padding: 16px 18px; }
+
+    .booking-detail {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+
+    .booking-detail .icon { color: var(--muted); font-size: 14px; width: 16px; flex-shrink: 0; margin-top: 1px; }
+    .booking-detail .val { color: var(--text); line-height: 1.4; }
+    .booking-detail .val strong { display: block; }
+    .booking-detail .val small { color: var(--muted); font-size: 11px; }
+
+    .booking-card-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .price-tag {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--accent3);
+    }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      gap: 12px;
+      color: var(--muted);
+    }
+
+    /* ── Toast ── */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+      animation: slideInRight .25s ease;
+      max-width: 320px;
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .toast.success { border-color: rgba(45,212,191,.3); }
+    .toast.error   { border-color: rgba(239,68,68,.3); }
+
+    /* ── Upcoming strip ── */
+    .upcoming-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .upcoming-item {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      transition: border-color .2s;
+    }
+
+    .upcoming-item:hover { border-color: rgba(123,94,167,.3); }
+
+    .upcoming-date {
+      text-align: center;
+      min-width: 44px;
+    }
+
+    .upcoming-day { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; line-height: 1; }
+    .upcoming-month { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+    .upcoming-info { flex: 1; }
+    .upcoming-name { font-weight: 600; font-size: 14px; }
+    .upcoming-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    .upcoming-price { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent3); font-size: 14px; }
+
+    /* ── Genre tags ── */
+    .genre-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .genre-tag {
+      padding: 2px 10px;
+      background: rgba(123,94,167,.15);
+      border: 1px solid rgba(123,94,167,.25);
+      border-radius: 20px;
+      font-size: 11px;
+      color: #c4b5fd;
+    }
+
+    /* ── toggle switch ── */
+    .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+
+    .toggle {
+      position: relative;
+      width: 40px; height: 22px;
+      cursor: pointer;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      transition: .2s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 2px; bottom: 2px;
+      background: var(--muted);
+      border-radius: 50%;
+      transition: .2s;
+    }
+
+    .toggle input:checked + .toggle-slider { background: rgba(45,212,191,.2); border-color: var(--accent3); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); background: var(--accent3); }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .page-content { padding: 16px; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ──────────── SIDEBAR ──────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">Bass<span>wala</span></div>
+    <div class="logo-sub">Captain Portal</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active" onclick="navigate('dashboard')">
+      <span class="icon">📊</span> Dashboard
+    </div>
+
+    <div class="nav-section-label">Fleet</div>
+    <div class="nav-item" onclick="navigate('djs')">
+      <span class="icon">🎧</span> My DJs
+    </div>
+    <div class="nav-item" onclick="navigate('equipment')">
+      <span class="icon">🔊</span> Equipment
+    </div>
+
+    <div class="nav-section-label">Operations</div>
+    <div class="nav-item" onclick="navigate('bookings')">
+      <span class="icon">📋</span> All Bookings
+      <span class="nav-badge" id="pending-count">0</span>
+    </div>
+    <div class="nav-item" onclick="navigate('map')">
+      <span class="icon">🗺️</span> Delivery Map
+    </div>
+
+    <div class="nav-section-label">Account</div>
+    <div class="nav-item" onclick="navigate('profile')">
+      <span class="icon">⚙️</span> Settings
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="captain-chip">
+      <div class="avatar" id="sidebar-avatar">C</div>
+      <div class="captain-info">
+        <div class="captain-name" id="sidebar-name">Captain</div>
+        <div class="captain-role">⚡ Captain</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ──────────── MAIN ──────────── -->
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title" id="page-title">Dashboard</div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline btn-sm" onclick="logout()">Sign out</button>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- ── DASHBOARD PAGE ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="stat-grid" id="stats-grid">
+        <div class="loading-center"><div class="spinner"></div></div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Upcoming Bookings</div>
+        <button class="btn btn-outline btn-sm" onclick="navigate('bookings')">View all →</button>
+      </div>
+      <div id="upcoming-list"><div class="loading-center"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- ── DJS PAGE ── -->
+    <div class="page" id="page-djs">
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="🔍  Search DJs…" oninput="filterDJs(this.value)" />
+          <button class="btn btn-primary btn-sm" onclick="openAddDJModal()">+ Add DJ</button>
+        </div>
+        <div id="djs-table-body">
+          <div class="loading-center"><div class="spinner"></div> Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EQUIPMENT PAGE ── -->
+    <div class="page" id="page-equipment">
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="🔍  Search equipment…" oninput="filterEquipment(this.value)" />
+          <select class="filter-select" onchange="filterEquipment(document.querySelector('.search-input').value, this.value)">
+            <option value="">All categories</option>
+            <option>Speaker</option><option>Mixer</option><option>Turntable</option>
+            <option>Microphone</option><option>Lighting</option><option>Fog Machine</option>
+            <option>Laser</option><option>LED Panel</option><option>Amplifier</option>
+            <option>Subwoofer</option><option>DJ Controller</option><option>Projector</option>
+            <option>LED Screen</option><option>Karaoke System</option><option>CO2 Cannon</option>
+            <option>Other</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="openAddEquipmentModal()">+ Add Equipment</button>
+        </div>
+        <div id="equipment-table-body">
+          <div class="loading-center"><div class="spinner"></div> Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BOOKINGS PAGE ── -->
+    <div class="page" id="page-bookings">
+      <div class="table-toolbar" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px 16px 0 0;margin-bottom:0;">
+        <input class="search-input" placeholder="🔍  Search bookings…" />
+        <select class="filter-select" id="booking-status-filter" onchange="loadBookings()">
+          <option value="">All statuses</option>
+          <option>Pending</option>
+          <option>Confirmed</option>
+          <option>Equipment Dispatched</option>
+          <option>In Progress</option>
+          <option>Completed</option>
+          <option>Cancelled</option>
+        </select>
+      </div>
+      <div id="bookings-table-body" style="background:var(--bg2);border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;">
+        <div class="loading-center"><div class="spinner"></div> Loading…</div>
+      </div>
+    </div>
+
+    <!-- ── MAP PAGE ── -->
+    <div class="page" id="page-map">
+      <div class="section-header">
+        <div class="section-title">Active Delivery Locations</div>
+        <select class="filter-select" id="map-status-filter" onchange="loadMapBookings()">
+          <option value="">Active (Confirmed + Dispatched + In Progress)</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Equipment Dispatched">Equipment Dispatched</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+      <div id="map-cards" class="booking-grid">
+        <div class="loading-center"><div class="spinner"></div> Loading delivery locations…</div>
+      </div>
+    </div>
+
+    <!-- ── PROFILE PAGE ── -->
+    <div class="page" id="page-profile">
+      <div class="table-wrap" style="max-width:560px;">
+        <div class="modal-header" style="border-radius:16px 16px 0 0;">
+          <div class="modal-title">Captain Profile</div>
+        </div>
+        <div class="modal-body" id="profile-form-body">
+          <div class="loading-center"><div class="spinner"></div></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end page-content -->
+</main>
+
+<!-- ─────── TOAST CONTAINER ─────── -->
+<div class="toast-container" id="toasts"></div>
+
+<!-- ─────── ADD DJ MODAL ─────── -->
+<div class="modal-overlay" id="modal-dj">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="dj-modal-title">Add New DJ</div>
+      <button class="modal-close" onclick="closeModal('modal-dj')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="dj-edit-id" />
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Name *</label>
+          <input type="text" class="form-input" id="dj-name" placeholder="DJ Raj" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="tel" class="form-input" id="dj-phone" placeholder="9876543210" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Hourly Rate (₹) *</label>
+          <input type="number" class="form-input" id="dj-rate" placeholder="2500" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Min. Hours</label>
+          <input type="number" class="form-input" id="dj-min-hours" value="3" min="1" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Experience (years)</label>
+          <input type="number" class="form-input" id="dj-exp" value="1" min="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="dj-email" placeholder="dj@email.com" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Genres (comma-separated)</label>
+        <input type="text" class="form-input" id="dj-genres" placeholder="Bollywood, EDM, Hip-Hop" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Specializations (comma-separated)</label>
+        <input type="text" class="form-input" id="dj-specs" placeholder="Wedding, Corporate, Club" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bio</label>
+        <textarea class="form-textarea" id="dj-bio" placeholder="Brief description…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-dj')">Cancel</button>
+      <button class="btn btn-primary" id="dj-save-btn" onclick="saveDJ()">Add DJ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── ADD EQUIPMENT MODAL ─────── -->
+<div class="modal-overlay" id="modal-equipment">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="eq-modal-title">Add Equipment</div>
+      <button class="modal-close" onclick="closeModal('modal-equipment')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="eq-edit-id" />
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Name *</label>
+          <input type="text" class="form-input" id="eq-name" placeholder="JBL PRX912" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-select" id="eq-category">
+            <option value="">Select…</option>
+            <option>Speaker</option><option>Mixer</option><option>Turntable</option>
+            <option>Microphone</option><option>Lighting</option><option>Fog Machine</option>
+            <option>Laser</option><option>LED Panel</option><option>Amplifier</option>
+            <option>Subwoofer</option><option>DJ Controller</option><option>Projector</option>
+            <option>LED Screen</option><option>Karaoke System</option><option>CO2 Cannon</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Brand</label>
+          <input type="text" class="form-input" id="eq-brand" placeholder="JBL" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Model</label>
+          <input type="text" class="form-input" id="eq-model" placeholder="PRX912" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Daily Rate (₹) *</label>
+          <input type="number" class="form-input" id="eq-daily-rate" placeholder="1500" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Qty Available</label>
+          <input type="number" class="form-input" id="eq-qty" value="1" min="1" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Delivery Charge (₹/km)</label>
+          <input type="number" class="form-input" id="eq-delivery-km" value="10" min="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Condition</label>
+          <select class="form-select" id="eq-condition">
+            <option>Excellent</option>
+            <option selected>Good</option>
+            <option>Fair</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="eq-desc" placeholder="Brief description…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-equipment')">Cancel</button>
+      <button class="btn btn-primary" id="eq-save-btn" onclick="saveEquipment()">Add Equipment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── BOOKING DETAIL MODAL ─────── -->
+<div class="modal-overlay" id="modal-booking">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <div class="modal-title">Booking Details</div>
+      <button class="modal-close" onclick="closeModal('modal-booking')">✕</button>
+    </div>
+    <div class="modal-body" id="booking-detail-body"></div>
+    <div class="modal-footer" id="booking-detail-footer"></div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:5000/api';
+let token = localStorage.getItem('captainToken');
+let captainUser = JSON.parse(localStorage.getItem('captainUser') || '{}');
+let allDJs = [], allEquipment = [], allBookings = [];
+
+// ── Auth guard ──────────────────────────────────────────────
+if (!token) window.location.href = 'captain-login.html';
+
+// ── Init ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const name = captainUser?.firstName || 'Captain';
+  document.getElementById('sidebar-name').textContent = name;
+  document.getElementById('sidebar-avatar').textContent = name[0].toUpperCase();
+  loadDashboard();
+});
+
+// ── Navigation ───────────────────────────────────────────────
+function navigate(page) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+  const navMap = { dashboard:0, djs:1, equipment:2, bookings:3, map:4, profile:5 };
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems[navMap[page]]?.classList.add('active');
+  document.getElementById(`page-${page}`)?.classList.add('active');
+
+  const titles = { dashboard:'Dashboard', djs:'My DJs', equipment:'Equipment', bookings:'All Bookings', map:'Delivery Map', profile:'Settings' };
+  document.getElementById('page-title').textContent = titles[page] || page;
+
+  if (page === 'djs') loadDJs();
+  else if (page === 'equipment') loadEquipment();
+  else if (page === 'bookings') loadBookings();
+  else if (page === 'map') loadMapBookings();
+  else if (page === 'profile') loadProfile();
+}
+
+// ── API helper ──────────────────────────────────────────────
+async function api(method, path, body) {
+  const res = await fetch(`${API}${path}`, {
+    method,
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ── Modal helpers ─────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+
+// ── Status chip helper ────────────────────────────────────────
+function statusChip(s) {
+  const map = {
+    'Pending': 'chip-yellow',
+    'Confirmed': 'chip-blue',
+    'Equipment Dispatched': 'chip-purple',
+    'In Progress': 'chip-orange',
+    'Completed': 'chip-green',
+    'Cancelled': 'chip-red'
+  };
+  return `<span class="chip ${map[s] || 'chip-gray'}">${s}</span>`;
+}
+
+function paymentChip(s) {
+  const map = { 'Paid': 'chip-green', 'Pending': 'chip-yellow', 'Refunded': 'chip-purple', 'Partially Paid': 'chip-orange' };
+  return `<span class="chip ${map[s] || 'chip-gray'}">${s}</span>`;
+}
+
+// ═══════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    const data = await api('GET', '/captain/dashboard');
+    const s = data.data.stats;
+
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card s1">
+        <div class="stat-icon">🎧</div>
+        <div class="stat-val">${s.totalDJs}</div>
+        <div class="stat-label">Total DJs</div>
+        <div class="stat-sub">${s.activeDJs} available now</div>
+      </div>
+      <div class="stat-card s2">
+        <div class="stat-icon">🔊</div>
+        <div class="stat-val">${s.totalEquipment}</div>
+        <div class="stat-label">Equipment Items</div>
+        <div class="stat-sub">${s.availableEquipment} available</div>
+      </div>
+      <div class="stat-card s3">
+        <div class="stat-icon">📋</div>
+        <div class="stat-val">${s.totalBookings}</div>
+        <div class="stat-label">Total Bookings</div>
+        <div class="stat-sub">${s.bookingsThisMonth} this month</div>
+      </div>
+      <div class="stat-card s4">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-val">${s.pendingBookings}</div>
+        <div class="stat-label">Pending</div>
+        <div class="stat-sub">${s.confirmedBookings} confirmed</div>
+      </div>
+    `;
+
+    document.getElementById('pending-count').textContent = s.pendingBookings;
+
+    const upcoming = data.data.upcomingBookings;
+    if (!upcoming.length) {
+      document.getElementById('upcoming-list').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📅</div>
+          <div class="empty-title">No upcoming bookings</div>
+          <div class="empty-desc">New bookings will appear here once confirmed.</div>
+        </div>`;
+      return;
+    }
+
+    document.getElementById('upcoming-list').innerHTML = `
+      <div class="upcoming-list">
+        ${upcoming.map(b => {
+          const d = new Date(b.eventDate);
+          return `
+          <div class="upcoming-item" onclick="openBookingDetail(${b.id})">
+            <div class="upcoming-date">
+              <div class="upcoming-day">${d.getDate()}</div>
+              <div class="upcoming-month">${d.toLocaleString('default',{month:'short'})}</div>
+            </div>
+            <div class="upcoming-info">
+              <div class="upcoming-name">${b.eventType} — ${b.deliveryCity || 'Location TBD'}</div>
+              <div class="upcoming-meta">
+                ${b.startTime}–${b.endTime} &nbsp;·&nbsp;
+                ${b.dj ? '🎧 ' + b.dj.name : ''} &nbsp;·&nbsp;
+                📞 ${b.user?.phone || '—'}
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+              ${statusChip(b.status)}
+              <div class="upcoming-price">₹${Number(b.totalAmount).toLocaleString()}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════
+//  DJS
+// ═══════════════════════════════════════════
+async function loadDJs() {
+  try {
+    const data = await api('GET', '/captain/djs');
+    allDJs = data.data;
+    renderDJsTable(allDJs);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function filterDJs(q) {
+  const filtered = allDJs.filter(d =>
+    d.name.toLowerCase().includes(q.toLowerCase()) ||
+    (d.phone || '').includes(q)
+  );
+  renderDJsTable(filtered);
+}
+
+function renderDJsTable(djs) {
+  if (!djs.length) {
+    document.getElementById('djs-table-body').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🎧</div>
+        <div class="empty-title">No DJs yet</div>
+        <div class="empty-desc">Add your first DJ to start accepting bookings.</div>
+        <button class="btn btn-primary" onclick="openAddDJModal()">+ Add DJ</button>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('djs-table-body').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>DJ</th><th>Genres</th><th>Rate</th><th>Status</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${djs.map(d => `
+        <tr>
+          <td>
+            <div class="td-name">${d.name}</div>
+            <div class="td-sub">${d.phone || ''} ${d.experienceYears ? '· ' + d.experienceYears + ' yrs exp' : ''}</div>
+          </td>
+          <td>
+            <div class="genre-tags">
+              ${(d.genres || []).slice(0,3).map(g => `<span class="genre-tag">${g}</span>`).join('')}
+            </div>
+          </td>
+          <td>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;">₹${Number(d.hourlyRate).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--muted)">/hr</span></div>
+            <div class="td-sub">min ${d.minimumHours} hr</div>
+          </td>
+          <td>
+            <span class="chip ${d.isAvailable ? 'chip-green' : 'chip-gray'}">${d.isAvailable ? 'Available' : 'Unavailable'}</span>
+          </td>
+          <td>
+            <div class="action-row">
+              <button class="btn btn-outline btn-sm" onclick="editDJ(${JSON.stringify(d).replace(/"/g,'&quot;')})">Edit</button>
+              <button class="btn btn-sm ${d.isAvailable ? 'btn-danger' : 'btn-success'}" onclick="toggleDJ(${d.id},${d.isAvailable})">
+                ${d.isAvailable ? 'Mark Off' : 'Mark On'}
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="deleteDJ(${d.id})">Delete</button>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function openAddDJModal() {
+  document.getElementById('dj-edit-id').value = '';
+  document.getElementById('dj-modal-title').textContent = 'Add New DJ';
+  document.getElementById('dj-save-btn').textContent = 'Add DJ';
+  ['dj-name','dj-phone','dj-rate','dj-genres','dj-specs','dj-bio','dj-email'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('dj-min-hours').value = 3;
+  document.getElementById('dj-exp').value = 1;
+  openModal('modal-dj');
+}
+
+function editDJ(dj) {
+  document.getElementById('dj-edit-id').value = dj.id;
+  document.getElementById('dj-modal-title').textContent = 'Edit DJ';
+  document.getElementById('dj-save-btn').textContent = 'Save Changes';
+  document.getElementById('dj-name').value = dj.name || '';
+  document.getElementById('dj-phone').value = dj.phone || '';
+  document.getElementById('dj-email').value = dj.email || '';
+  document.getElementById('dj-rate').value = dj.hourlyRate || '';
+  document.getElementById('dj-min-hours').value = dj.minimumHours || 3;
+  document.getElementById('dj-exp').value = dj.experienceYears || 0;
+  document.getElementById('dj-genres').value = (dj.genres || []).join(', ');
+  document.getElementById('dj-specs').value = (dj.specializations || []).join(', ');
+  document.getElementById('dj-bio').value = dj.bio || '';
+  openModal('modal-dj');
+}
+
+async function saveDJ() {
+  const id = document.getElementById('dj-edit-id').value;
+  const payload = {
+    name: document.getElementById('dj-name').value.trim(),
+    phone: document.getElementById('dj-phone').value.trim() || undefined,
+    email: document.getElementById('dj-email').value.trim() || undefined,
+    hourlyRate: parseFloat(document.getElementById('dj-rate').value),
+    minimumHours: parseInt(document.getElementById('dj-min-hours').value),
+    experienceYears: parseInt(document.getElementById('dj-exp').value) || 0,
+    genres: document.getElementById('dj-genres').value.split(',').map(s=>s.trim()).filter(Boolean),
+    specializations: document.getElementById('dj-specs').value.split(',').map(s=>s.trim()).filter(Boolean),
+    bio: document.getElementById('dj-bio').value.trim() || undefined
+  };
+
+  if (!payload.name || !payload.hourlyRate) return toast('Name and rate are required', 'error');
+
+  try {
+    if (id) await api('PUT', `/captain/djs/${id}`, payload);
+    else await api('POST', '/captain/djs', payload);
+    toast(id ? 'DJ updated!' : 'DJ added!');
+    closeModal('modal-dj');
+    loadDJs();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function toggleDJ(id, current) {
+  try {
+    await api('PUT', `/captain/djs/${id}/availability`);
+    toast(`DJ marked ${current ? 'unavailable' : 'available'}`);
+    loadDJs();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function deleteDJ(id) {
+  if (!confirm('Remove this DJ? This cannot be undone.')) return;
+  try {
+    await api('DELETE', `/captain/djs/${id}`);
+    toast('DJ removed');
+    loadDJs();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  EQUIPMENT
+// ═══════════════════════════════════════════
+async function loadEquipment() {
+  try {
+    const data = await api('GET', '/captain/equipment');
+    allEquipment = data.data;
+    renderEquipmentTable(allEquipment);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function filterEquipment(q = '', cat = '') {
+  const filtered = allEquipment.filter(e =>
+    (e.name.toLowerCase().includes(q.toLowerCase()) || (e.brand||'').toLowerCase().includes(q.toLowerCase())) &&
+    (!cat || e.category === cat)
+  );
+  renderEquipmentTable(filtered);
+}
+
+function renderEquipmentTable(eqs) {
+  if (!eqs.length) {
+    document.getElementById('equipment-table-body').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔊</div>
+        <div class="empty-title">No equipment yet</div>
+        <div class="empty-desc">Add your speakers, mixers, lights and more.</div>
+        <button class="btn btn-primary" onclick="openAddEquipmentModal()">+ Add Equipment</button>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('equipment-table-body').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Equipment</th><th>Category</th><th>Daily Rate</th><th>Qty</th><th>Status</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${eqs.map(e => `
+        <tr>
+          <td>
+            <div class="td-name">${e.name}</div>
+            <div class="td-sub">${[e.brand, e.model].filter(Boolean).join(' · ')}</div>
+          </td>
+          <td><span class="chip chip-purple">${e.category}</span></td>
+          <td>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;">₹${Number(e.dailyRate).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--muted)">/day</span></div>
+            ${e.deliveryChargePerKm ? `<div class="td-sub">+₹${e.deliveryChargePerKm}/km delivery</div>` : ''}
+          </td>
+          <td>
+            <div style="font-weight:600;">${e.availableQuantity} <span style="color:var(--muted);font-size:11px;">/ ${e.quantity}</span></div>
+          </td>
+          <td>
+            <span class="chip ${e.isAvailable ? 'chip-green' : 'chip-gray'}">${e.isAvailable ? 'Available' : 'Off'}</span>
+            &nbsp;<span class="chip chip-gray">${e.condition}</span>
+          </td>
+          <td>
+            <div class="action-row">
+              <button class="btn btn-outline btn-sm" onclick="editEquipment(${JSON.stringify(e).replace(/"/g,'&quot;')})">Edit</button>
+              <button class="btn btn-sm ${e.isAvailable ? 'btn-danger' : 'btn-success'}" onclick="toggleEquipment(${e.id})">
+                ${e.isAvailable ? 'Mark Off' : 'Mark On'}
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="deleteEquipment(${e.id})">Delete</button>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function openAddEquipmentModal() {
+  document.getElementById('eq-edit-id').value = '';
+  document.getElementById('eq-modal-title').textContent = 'Add Equipment';
+  document.getElementById('eq-save-btn').textContent = 'Add Equipment';
+  ['eq-name','eq-brand','eq-model','eq-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('eq-category').value = '';
+  document.getElementById('eq-daily-rate').value = '';
+  document.getElementById('eq-qty').value = 1;
+  document.getElementById('eq-delivery-km').value = 10;
+  document.getElementById('eq-condition').value = 'Good';
+  openModal('modal-equipment');
+}
+
+function editEquipment(eq) {
+  document.getElementById('eq-edit-id').value = eq.id;
+  document.getElementById('eq-modal-title').textContent = 'Edit Equipment';
+  document.getElementById('eq-save-btn').textContent = 'Save Changes';
+  document.getElementById('eq-name').value = eq.name || '';
+  document.getElementById('eq-category').value = eq.category || '';
+  document.getElementById('eq-brand').value = eq.brand || '';
+  document.getElementById('eq-model').value = eq.model || '';
+  document.getElementById('eq-daily-rate').value = eq.dailyRate || '';
+  document.getElementById('eq-qty').value = eq.quantity || 1;
+  document.getElementById('eq-delivery-km').value = eq.deliveryChargePerKm || 0;
+  document.getElementById('eq-condition').value = eq.condition || 'Good';
+  document.getElementById('eq-desc').value = eq.description || '';
+  openModal('modal-equipment');
+}
+
+async function saveEquipment() {
+  const id = document.getElementById('eq-edit-id').value;
+  const qty = parseInt(document.getElementById('eq-qty').value);
+  const payload = {
+    name: document.getElementById('eq-name').value.trim(),
+    category: document.getElementById('eq-category').value,
+    brand: document.getElementById('eq-brand').value.trim() || undefined,
+    model: document.getElementById('eq-model').value.trim() || undefined,
+    dailyRate: parseFloat(document.getElementById('eq-daily-rate').value),
+    quantity: qty,
+    availableQuantity: qty,
+    deliveryChargePerKm: parseFloat(document.getElementById('eq-delivery-km').value) || 0,
+    condition: document.getElementById('eq-condition').value,
+    description: document.getElementById('eq-desc').value.trim() || undefined
+  };
+
+  if (!payload.name || !payload.category || !payload.dailyRate) return toast('Name, category, and daily rate are required', 'error');
+
+  try {
+    if (id) await api('PUT', `/captain/equipment/${id}`, payload);
+    else await api('POST', '/captain/equipment', payload);
+    toast(id ? 'Equipment updated!' : 'Equipment added!');
+    closeModal('modal-equipment');
+    loadEquipment();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function toggleEquipment(id) {
+  try {
+    await api('PUT', `/captain/equipment/${id}/availability`);
+    toast('Availability updated');
+    loadEquipment();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function deleteEquipment(id) {
+  if (!confirm('Remove this equipment?')) return;
+  try {
+    await api('DELETE', `/captain/equipment/${id}`);
+    toast('Equipment removed');
+    loadEquipment();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  BOOKINGS
+// ═══════════════════════════════════════════
+async function loadBookings() {
+  const status = document.getElementById('booking-status-filter').value;
+  const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+  try {
+    const data = await api('GET', `/captain/bookings${qs}&limit=50`);
+    allBookings = data.data;
+    renderBookingsTable(allBookings);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function renderBookingsTable(bookings) {
+  if (!bookings.length) {
+    document.getElementById('bookings-table-body').innerHTML = `
+      <div class="empty-state"><div class="empty-icon">📋</div>
+        <div class="empty-title">No bookings found</div>
+        <div class="empty-desc">Bookings will appear here once users start booking your services.</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('bookings-table-body').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Customer</th><th>Event</th><th>Date & Time</th><th>Delivery Location</th>
+        <th>Amount</th><th>Status</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${bookings.map(b => {
+          const d = new Date(b.eventDate);
+          return `
+          <tr>
+            <td>
+              <div class="td-name">${b.user?.firstName} ${b.user?.lastName}</div>
+              <div class="td-sub">📞 ${b.user?.phone || '—'}</div>
+            </td>
+            <td>
+              <div class="td-name">${b.eventType}</div>
+              <div class="td-sub">${b.dj ? '🎧 ' + b.dj.name : 'Equipment only'}</div>
+            </td>
+            <td>
+              <div style="font-weight:600;">${d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</div>
+              <div class="td-sub">${b.startTime} – ${b.endTime}</div>
+            </td>
+            <td>
+              <div style="font-size:12px;">📍 ${[b.deliveryStreet,b.deliveryCity].filter(Boolean).join(', ') || '—'}</div>
+              ${b.deliveryDistanceKm ? `<div class="td-sub">${b.deliveryDistanceKm} km away</div>` : ''}
+            </td>
+            <td>
+              <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent3);">₹${Number(b.totalAmount).toLocaleString()}</div>
+              ${paymentChip(b.paymentStatus)}
+            </td>
+            <td>${statusChip(b.status)}</td>
+            <td>
+              <button class="btn btn-outline btn-sm" onclick="openBookingDetail(${b.id})">View</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function openBookingDetail(id) {
+  openModal('modal-booking');
+  document.getElementById('booking-detail-body').innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
+
+  try {
+    const data = await api('GET', `/captain/bookings/${id}`);
+    const b = data.data;
+    const d = new Date(b.eventDate);
+
+    const eqRows = (b.equipmentDetails || []).map(item => `
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <div>
+          <strong>${item.equipment?.name || 'Equipment #' + item.equipmentId}</strong>
+          <div style="color:var(--muted);font-size:11px;">${item.equipment?.category || ''} · Qty: ${item.quantity} · ${item.days} day(s)</div>
+        </div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;">₹${Number(item.itemTotal || 0).toLocaleString()}</div>
+      </div>`).join('');
+
+    document.getElementById('booking-detail-body').innerHTML = `
+      <div style="display:grid;gap:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:20px;font-family:'Syne',sans-serif;font-weight:700;">${b.eventType}</div>
+            <div style="color:var(--muted);font-size:13px;">Booking #${b.id}</div>
+          </div>
+          ${statusChip(b.status)}
+        </div>
+
+        <div style="background:var(--bg3);border-radius:12px;padding:16px;">
+          <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Customer</div>
+          <div style="font-weight:600;">${b.user?.firstName} ${b.user?.lastName}</div>
+          <div style="color:var(--muted);font-size:13px;">📞 ${b.user?.phone || '—'} &nbsp;·&nbsp; ✉️ ${b.user?.email || '—'}</div>
+        </div>
+
+        <div style="background:var(--bg3);border-radius:12px;padding:16px;">
+          <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">📍 Delivery Location</div>
+          <div style="font-weight:600;font-size:14px;">${[b.deliveryStreet, b.deliveryCity, b.deliveryState].filter(Boolean).join(', ')}</div>
+          <div style="color:var(--muted);font-size:12px;margin-top:4px;">
+            Lat: ${b.deliveryLatitude}, Lng: ${b.deliveryLongitude}
+            ${b.deliveryDistanceKm ? ' · ' + b.deliveryDistanceKm + ' km from base' : ''}
+          </div>
+          <a href="https://maps.google.com/?q=${b.deliveryLatitude},${b.deliveryLongitude}" target="_blank"
+             style="display:inline-block;margin-top:8px;color:var(--accent3);font-size:12px;text-decoration:none;">
+            🗺️ Open in Google Maps →
+          </a>
+        </div>
+
+        <div style="background:var(--bg3);border-radius:12px;padding:16px;">
+          <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Event Details</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
+            <div><span style="color:var(--muted);">Date:</span> <strong>${d.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'long',year:'numeric'})}</strong></div>
+            <div><span style="color:var(--muted);">Time:</span> <strong>${b.startTime} – ${b.endTime}</strong></div>
+            <div><span style="color:var(--muted);">Duration:</span> <strong>${b.durationHours} hours</strong></div>
+            ${b.guestCount ? `<div><span style="color:var(--muted);">Guests:</span> <strong>${b.guestCount}</strong></div>` : ''}
+          </div>
+          ${b.specialRequests ? `<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,.03);border-radius:8px;font-size:12px;color:var(--muted);">"${b.specialRequests}"</div>` : ''}
+        </div>
+
+        ${b.dj ? `
+        <div style="background:var(--bg3);border-radius:12px;padding:16px;">
+          <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">🎧 DJ</div>
+          <div style="font-weight:600;">${b.dj.name}</div>
+          ${b.dj.phone ? `<div style="color:var(--muted);font-size:13px;">📞 ${b.dj.phone}</div>` : ''}
+          <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent3);margin-top:6px;">₹${Number(b.djFee).toLocaleString()}</div>
+        </div>` : ''}
+
+        ${eqRows ? `
+        <div style="background:var(--bg3);border-radius:12px;padding:16px;">
+          <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">🔊 Equipment</div>
+          ${eqRows}
+        </div>` : ''}
+
+        <div style="background:var(--bg3);border-radius:12px;padding:16px;">
+          <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Pricing</div>
+          ${b.djFee ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="color:var(--muted);">DJ Fee</span><span>₹${Number(b.djFee).toLocaleString()}</span></div>` : ''}
+          ${b.equipmentFee ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="color:var(--muted);">Equipment</span><span>₹${Number(b.equipmentFee).toLocaleString()}</span></div>` : ''}
+          ${b.deliveryFee ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="color:var(--muted);">Delivery</span><span>₹${Number(b.deliveryFee).toLocaleString()}</span></div>` : ''}
+          <div style="display:flex;justify-content:space-between;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;padding:10px 0 0;border-top:1px solid var(--border);margin-top:8px;">
+            <span>Total</span><span style="color:var(--accent3);">₹${Number(b.totalAmount).toLocaleString()}</span>
+          </div>
+          <div style="margin-top:6px;">${paymentChip(b.paymentStatus)}</div>
+        </div>
+
+        ${b.captainNotes ? `
+        <div style="background:rgba(123,94,167,.08);border:1px solid rgba(123,94,167,.2);border-radius:12px;padding:14px;">
+          <div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:6px;">📝 Captain Notes</div>
+          <div style="font-size:13px;">${b.captainNotes}</div>
+        </div>` : ''}
+      </div>`;
+
+    // Footer with status actions
+    const validNext = {
+      'Pending': ['Confirmed', 'Cancelled'],
+      'Confirmed': ['Equipment Dispatched', 'Cancelled'],
+      'Equipment Dispatched': ['In Progress'],
+      'In Progress': ['Completed']
+    };
+    const next = validNext[b.status] || [];
+
+    document.getElementById('booking-detail-footer').innerHTML = `
+      <button class="btn btn-outline" onclick="closeModal('modal-booking')">Close</button>
+      ${next.map(s => `
+        <button class="btn ${s === 'Cancelled' ? 'btn-danger' : 'btn-primary'}" onclick="updateStatus(${b.id},'${s}')">
+          → ${s}
+        </button>`).join('')}
+      ${b.paymentStatus === 'Pending' ? `
+        <button class="btn btn-success" onclick="markPaid(${b.id})">Mark Paid</button>` : ''}
+    `;
+  } catch (e) {
+    document.getElementById('booking-detail-body').innerHTML = `<div style="color:#f87171;padding:20px;">${e.message}</div>`;
+  }
+}
+
+async function updateStatus(id, status) {
+  const notes = status === 'Equipment Dispatched'
+    ? prompt('Add dispatch note (optional):') || undefined
+    : undefined;
+  try {
+    await api('PUT', `/captain/bookings/${id}/status`, { status, captainNotes: notes });
+    toast(`Status → ${status}`);
+    closeModal('modal-booking');
+    loadBookings();
+    loadDashboard();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function markPaid(id) {
+  const method = prompt('Payment method? (UPI/Cash/Card/Online)') || 'Cash';
+  try {
+    await api('PUT', `/captain/bookings/${id}/payment`, { paymentStatus: 'Paid', paymentMethod: method });
+    toast('Payment marked as Paid');
+    closeModal('modal-booking');
+    loadBookings();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  MAP VIEW
+// ═══════════════════════════════════════════
+async function loadMapBookings() {
+  const status = document.getElementById('map-status-filter').value;
+  const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+  try {
+    const data = await api('GET', `/captain/bookings/map${qs}`);
+    const bookings = data.data;
+    const container = document.getElementById('map-cards');
+
+    if (!bookings.length) {
+      container.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1;">
+          <div class="empty-icon">🗺️</div>
+          <div class="empty-title">No active deliveries</div>
+          <div class="empty-desc">Active booking locations will appear here.</div>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = bookings.map(b => {
+      const d = new Date(b.eventDate);
+      return `
+      <div class="booking-card">
+        <div class="booking-card-header">
+          <div>
+            <div class="booking-id">Booking #${b.id}</div>
+            <div class="booking-event">${b.eventType}</div>
+          </div>
+          ${statusChip(b.status)}
+        </div>
+        <div class="booking-card-body">
+          <div class="booking-detail">
+            <span class="icon">👤</span>
+            <div class="val"><strong>${b.user?.firstName} ${b.user?.lastName}</strong><small>📞 ${b.user?.phone || '—'}</small></div>
+          </div>
+          <div class="booking-detail">
+            <span class="icon">📅</span>
+            <div class="val"><strong>${d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}</strong><small>${b.startTime}</small></div>
+          </div>
+          <div class="booking-detail">
+            <span class="icon">📍</span>
+            <div class="val">
+              <strong>${b.deliveryCity || 'Unknown'}</strong>
+              <small>${b.deliveryStreet || ''}</small>
+              <small style="color:var(--accent3);">${b.deliveryDistanceKm ? b.deliveryDistanceKm + ' km away' : ''}</small>
+            </div>
+          </div>
+          ${b.dj ? `<div class="booking-detail"><span class="icon">🎧</span><div class="val"><strong>${b.dj.name}</strong><small>📞 ${b.dj.phone||'—'}</small></div></div>` : ''}
+        </div>
+        <div class="booking-card-footer">
+          <div class="price-tag">₹${Number(b.totalAmount).toLocaleString()}</div>
+          <div style="display:flex;gap:8px;">
+            <a href="https://maps.google.com/?q=${b.deliveryLatitude},${b.deliveryLongitude}" target="_blank" class="btn btn-outline btn-sm">🗺️ Navigate</a>
+            <button class="btn btn-primary btn-sm" onclick="openBookingDetail(${b.id})">Details</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  PROFILE
+// ═══════════════════════════════════════════
+async function loadProfile() {
+  try {
+    const data = await api('GET', '/captain/profile');
+    const c = data.data;
+    document.getElementById('profile-form-body').innerHTML = `
+      <div class="form-group">
+        <label class="form-label">Business Name</label>
+        <input type="text" class="form-input" id="prof-business" value="${c.businessName || ''}" placeholder="Your brand name" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">City</label>
+          <input type="text" class="form-input" id="prof-city" value="${c.locationCity || ''}" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">State</label>
+          <input type="text" class="form-input" id="prof-state" value="${c.locationState || ''}" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Service Radius (km)</label>
+          <input type="number" class="form-input" id="prof-radius" value="${c.serviceRadiusKm || 50}" min="5" max="500" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Phone</label>
+          <input type="tel" class="form-input" id="prof-phone" value="${c.phone || ''}" placeholder="9876543210" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="prof-desc" placeholder="Tell customers about your services…">${c.description || ''}</textarea>
+      </div>`;
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function saveProfile() {
+  try {
+    await api('PUT', '/captain/profile', {
+      businessName: document.getElementById('prof-business').value.trim() || undefined,
+      locationCity: document.getElementById('prof-city').value.trim() || undefined,
+      locationState: document.getElementById('prof-state').value.trim() || undefined,
+      serviceRadiusKm: parseInt(document.getElementById('prof-radius').value) || 50,
+      phone: document.getElementById('prof-phone').value.trim() || undefined,
+      description: document.getElementById('prof-desc').value.trim() || undefined
+    });
+    toast('Profile saved!');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ── Logout ────────────────────────────────────────────────────
+function logout() {
+  localStorage.removeItem('captainToken');
+  localStorage.removeItem('captainUser');
+  window.location.href = 'captain-login.html';
+}
+</script>
+</body>
+</html>

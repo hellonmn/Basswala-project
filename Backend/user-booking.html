@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Basswala — Book Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Satoshi:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #f5f3ff;
+      --bg2: #fff;
+      --bg3: #f9f8ff;
+      --accent: #6d28d9;
+      --accent-light: #ede9fe;
+      --accent2: #ea580c;
+      --accent2-light: #fff7ed;
+      --teal: #0d9488;
+      --teal-light: #f0fdfa;
+      --text: #1e1b2e;
+      --muted: #6b7280;
+      --border: #e9e6f5;
+      --shadow: 0 2px 12px rgba(109,40,217,.08);
+      --shadow-lg: 0 8px 32px rgba(109,40,217,.15);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Satoshi', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+
+    .nav-logo {
+      font-family: 'Clash Display', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .nav-logo span { color: var(--accent2); }
+
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+
+    .nav-link {
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'Satoshi', sans-serif;
+    }
+
+    .nav-link:hover { color: var(--accent); background: var(--accent-light); }
+    .nav-link.active { color: var(--accent); background: var(--accent-light); font-weight: 600; }
+
+    .nav-btn {
+      padding: 8px 20px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Satoshi', sans-serif;
+      transition: all .2s;
+    }
+
+    .nav-btn:hover { background: #5b21b6; transform: translateY(-1px); }
+
+    /* ── Layout ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+    /* ── Hero strip ── */
+    .hero {
+      background: linear-gradient(135deg, var(--accent) 0%, #4c1d95 100%);
+      color: #fff;
+      padding: 48px 32px;
+      border-radius: 20px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '🎧';
+      position: absolute;
+      right: 40px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 80px;
+      opacity: .15;
+    }
+
+    .hero h1 {
+      font-family: 'Clash Display', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .hero p { color: rgba(255,255,255,.8); font-size: 16px; max-width: 500px; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 6px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+      width: fit-content;
+    }
+
+    .tab-btn {
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'Satoshi', sans-serif;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-btn:hover { color: var(--accent); }
+    .tab-btn.active { background: var(--accent); color: #fff; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .filter-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg2);
+      font-size: 14px;
+      font-family: 'Satoshi', sans-serif;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .filter-input:focus { border-color: var(--accent); }
+    .filter-input::placeholder { color: var(--muted); }
+
+    .filter-select {
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg2);
+      font-size: 14px;
+      font-family: 'Satoshi', sans-serif;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ── Cards grid ── */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 20px; }
+
+    /* ── DJ Card ── */
+    .dj-card {
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      transition: border-color .2s, transform .15s, box-shadow .2s;
+      cursor: pointer;
+    }
+
+    .dj-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+    .dj-card-img {
+      height: 100px;
+      background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px;
+      position: relative;
+    }
+
+    .dj-avail-dot {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 3px rgba(16,185,129,.25);
+    }
+
+    .dj-card-body { padding: 16px 18px; }
+
+    .dj-name { font-family: 'Clash Display', sans-serif; font-size: 17px; font-weight: 600; margin-bottom: 2px; }
+    .dj-captain { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+
+    .genre-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+
+    .genre-pill {
+      padding: 3px 10px;
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .dj-meta { display: flex; justify-content: space-between; align-items: center; }
+    .dj-rate { font-family: 'Clash Display', sans-serif; font-size: 18px; font-weight: 700; color: var(--accent2); }
+    .dj-rate small { font-family: 'Satoshi', sans-serif; font-size: 12px; font-weight: 400; color: var(--muted); }
+
+    .dj-rating { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; }
+
+    .btn-book {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Satoshi', sans-serif;
+      transition: all .2s;
+    }
+
+    .btn-book:hover { background: #5b21b6; }
+
+    /* ── Equipment Card ── */
+    .eq-card {
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      transition: border-color .2s, transform .15s, box-shadow .2s;
+      cursor: pointer;
+    }
+
+    .eq-card:hover { border-color: var(--teal); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(13,148,136,.12); }
+
+    .eq-card-img {
+      height: 90px;
+      background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+    }
+
+    .eq-card-body { padding: 16px 18px; }
+
+    .eq-name { font-family: 'Clash Display', sans-serif; font-size: 16px; font-weight: 600; margin-bottom: 3px; }
+
+    .eq-brand { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+
+    .eq-chip {
+      display: inline-block;
+      padding: 3px 10px;
+      background: var(--teal-light);
+      color: var(--teal);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .eq-meta { display: flex; justify-content: space-between; align-items: center; }
+    .eq-rate { font-family: 'Clash Display', sans-serif; font-size: 18px; font-weight: 700; color: var(--teal); }
+    .eq-rate small { font-family: 'Satoshi', sans-serif; font-size: 12px; font-weight: 400; color: var(--muted); }
+
+    .eq-qty { font-size: 12px; color: var(--muted); }
+    .eq-qty strong { color: var(--text); }
+
+    .btn-add-cart {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Satoshi', sans-serif;
+      transition: all .2s;
+    }
+
+    .btn-add-cart:hover { background: #0f766e; }
+    .btn-add-cart.added { background: var(--accent-light); color: var(--accent); }
+
+    /* ── Cart sidebar ── */
+    .cart-fab {
+      position: fixed;
+      bottom: 28px; right: 28px;
+      background: var(--accent);
+      color: #fff;
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(109,40,217,.4);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .2s;
+      z-index: 150;
+    }
+
+    .cart-fab:hover { transform: scale(1.1); }
+
+    .cart-count {
+      position: absolute;
+      top: -4px; right: -4px;
+      background: var(--accent2);
+      color: #fff;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Booking modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(6px);
+      z-index: 300;
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--bg2);
+      border-radius: 22px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,.2);
+      animation: slideUp .25s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .modal-header {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .modal-title { font-family: 'Clash Display', sans-serif; font-size: 20px; font-weight: 600; }
+
+    .modal-close {
+      background: var(--bg3);
+      border: none;
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+
+    .modal-close:hover { background: var(--border); }
+    .modal-body { padding: 24px 28px; }
+    .modal-footer {
+      padding: 16px 28px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 10px; justify-content: flex-end;
+    }
+
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg3);
+      font-size: 14px;
+      font-family: 'Satoshi', sans-serif;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+    .form-textarea { resize: vertical; min-height: 72px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .btn-primary {
+      padding: 11px 24px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Satoshi', sans-serif;
+      transition: all .2s;
+    }
+
+    .btn-primary:hover { background: #5b21b6; }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn-ghost {
+      padding: 11px 24px;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Satoshi', sans-serif;
+      color: var(--muted);
+      transition: all .2s;
+    }
+
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Booking cart summary ── */
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--bg3);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .cart-item-name { font-weight: 600; }
+    .cart-item-detail { color: var(--muted); font-size: 12px; }
+
+    .cart-item-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: color .2s, background .2s;
+    }
+
+    .cart-item-remove:hover { color: #ef4444; background: #fef2f2; }
+
+    .price-summary { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .price-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
+    .price-row.total { font-family: 'Clash Display', sans-serif; font-weight: 700; font-size: 20px; padding-top: 12px; border-top: 1px solid var(--border); margin-top: 8px; }
+    .price-row.total span:last-child { color: var(--teal); }
+
+    /* ── Empty state ── */
+    .empty {
+      padding: 64px 20px;
+      text-align: center;
+      color: var(--muted);
+      grid-column: 1 / -1;
+    }
+
+    .empty-icon { font-size: 52px; margin-bottom: 16px; }
+    .empty h3 { font-family: 'Clash Display', sans-serif; font-size: 20px; color: var(--text); margin-bottom: 8px; }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block; width: 20px; height: 20px;
+      border: 2px solid rgba(109,40,217,.2); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading { display:flex; justify-content:center; align-items:center; padding:60px; gap:12px; color:var(--muted); grid-column:1/-1; }
+
+    /* ── Toast ── */
+    .toast-wrap {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 400; display: flex; flex-direction: column; gap: 8px; align-items: center;
+    }
+
+    .toast {
+      background: #1e1b2e; color: #fff; padding: 12px 20px; border-radius: 12px;
+      font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.3);
+      animation: slideUp .25s ease; white-space: nowrap;
+    }
+
+    .toast.success { background: #064e3b; border: 1px solid #10b981; }
+    .toast.error   { background: #7f1d1d; border: 1px solid #ef4444; }
+
+    /* ── Location detecting ── */
+    .location-bar {
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .loc-dot {
+      width: 10px; height: 10px; border-radius: 50%; background: #10b981; flex-shrink:0;
+      box-shadow: 0 0 0 3px rgba(16,185,129,.2);
+    }
+
+    .loc-dot.detecting { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.2); animation: pulse 1s ease infinite; }
+
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
+
+    @media(max-width:640px) {
+      .nav { padding: 0 16px; }
+      .container { padding: 16px; }
+      .hero { padding: 32px 20px; }
+      .hero h1 { font-size: 26px; }
+      .form-row { grid-template-columns: 1fr; }
+      .tabs { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <div class="nav-logo">Bass<span>wala</span></div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="switchTab('djs')">🎧 DJs</button>
+    <button class="nav-link" onclick="switchTab('equipment')">🔊 Equipment</button>
+    <button class="nav-link" onclick="switchTab('mybookings')">📋 My Bookings</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="cart-fab" style="position:static;width:42px;height:42px;font-size:18px;box-shadow:none;" onclick="openCartModal()">
+      🛒<span class="cart-count" id="cart-count-nav" style="top:-6px;right:-6px;">0</span>
+    </button>
+    <button class="nav-btn" id="auth-btn" onclick="handleAuthBtn()">Login</button>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<div class="container">
+
+  <div class="hero">
+    <h1>Book DJs & Sound Equipment</h1>
+    <p>Find the perfect setup for your wedding, party, or corporate event. Local captains deliver to your door.</p>
+  </div>
+
+  <div id="location-bar" class="location-bar">
+    <div class="loc-dot detecting" id="loc-dot"></div>
+    <span id="loc-text">Detecting your location…</span>
+  </div>
+
+  <!-- ── TABS ── -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-djs" onclick="switchTab('djs')">🎧 DJs</button>
+    <button class="tab-btn" id="tab-equipment" onclick="switchTab('equipment')">🔊 Equipment</button>
+    <button class="tab-btn" id="tab-mybookings" onclick="switchTab('mybookings')">📋 My Bookings</button>
+  </div>
+
+  <!-- DJs tab -->
+  <div id="tab-content-djs">
+    <div class="filter-bar">
+      <input class="filter-input" placeholder="🔍 Search DJs…" oninput="filterDJs(this.value)" />
+      <select class="filter-select" onchange="filterDJs(document.querySelector('[placeholder=\'🔍 Search DJs…\']').value, this.value)">
+        <option value="">All genres</option>
+        <option>Bollywood</option><option>EDM</option><option>Hip-Hop</option>
+        <option>Pop</option><option>Rock</option><option>Jazz</option>
+        <option>Classical</option><option>Bhangra</option><option>Sufi</option>
+      </select>
+    </div>
+    <div class="cards-grid" id="djs-grid">
+      <div class="loading"><div class="spinner"></div> Loading DJs…</div>
+    </div>
+  </div>
+
+  <!-- Equipment tab -->
+  <div id="tab-content-equipment" style="display:none;">
+    <div class="filter-bar">
+      <input class="filter-input" placeholder="🔍 Search equipment…" oninput="filterEq(this.value)" />
+      <select class="filter-select" onchange="filterEq(document.querySelector('[placeholder=\'🔍 Search equipment…\']').value, this.value)">
+        <option value="">All categories</option>
+        <option>Speaker</option><option>Mixer</option><option>Turntable</option>
+        <option>Microphone</option><option>Lighting</option><option>Fog Machine</option>
+        <option>Laser</option><option>LED Panel</option><option>Amplifier</option>
+        <option>Subwoofer</option><option>DJ Controller</option><option>Projector</option>
+        <option>LED Screen</option><option>Karaoke System</option><option>CO2 Cannon</option>
+      </select>
+    </div>
+    <div class="cards-grid" id="eq-grid">
+      <div class="loading"><div class="spinner"></div> Loading equipment…</div>
+    </div>
+  </div>
+
+  <!-- My Bookings tab -->
+  <div id="tab-content-mybookings" style="display:none;">
+    <div id="my-bookings-content">
+      <div class="loading"><div class="spinner"></div> Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CART FAB ── -->
+<button class="cart-fab" onclick="openCartModal()" id="cart-fab">
+  🛒
+  <span class="cart-count" id="cart-count">0</span>
+</button>
+
+<!-- ── CART / BOOKING MODAL ── -->
+<div class="modal-overlay" id="modal-cart">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Your Selection</div>
+      <button class="modal-close" onclick="closeModal('modal-cart')">✕</button>
+    </div>
+    <div class="modal-body" id="cart-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-cart')">Continue Browsing</button>
+      <button class="btn-primary" id="cart-proceed-btn" onclick="proceedToBooking()">Book Now →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── BOOKING FORM MODAL ── -->
+<div class="modal-overlay" id="modal-booking">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <div class="modal-title">Complete Your Booking</div>
+      <button class="modal-close" onclick="closeModal('modal-booking')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Event Type *</label>
+          <select class="form-select" id="b-event-type">
+            <option>Wedding</option><option>Birthday</option><option>Corporate</option>
+            <option>Club</option><option>Private Party</option><option>Festival</option>
+            <option>School Event</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Event Date *</label>
+          <input type="date" class="form-input" id="b-date" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Start Time *</label>
+          <input type="time" class="form-input" id="b-start-time" value="18:00" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Time *</label>
+          <input type="time" class="form-input" id="b-end-time" value="23:00" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Duration (hours) *</label>
+          <input type="number" class="form-input" id="b-duration" value="5" min="1" max="24" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Guest Count</label>
+          <input type="number" class="form-input" id="b-guests" placeholder="150" min="1" />
+        </div>
+      </div>
+
+      <div style="background:var(--accent-light);border-radius:12px;padding:14px 16px;margin-bottom:18px;">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">📍 Delivery Address</div>
+        <div id="loc-autofill" style="font-size:13px;color:var(--muted);margin-bottom:10px;">Using your detected location</div>
+        <div class="form-row" style="margin-bottom:0;">
+          <input type="text" class="form-input" id="b-street" placeholder="Street / Venue name" />
+          <input type="text" class="form-input" id="b-city" placeholder="City" />
+        </div>
+        <div class="form-row" style="margin-top:8px;margin-bottom:0;">
+          <input type="text" class="form-input" id="b-state" placeholder="State" />
+          <input type="text" class="form-input" id="b-zip" placeholder="Pincode" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Special Requests</label>
+        <textarea class="form-textarea" id="b-requests" placeholder="e.g. Play Bollywood classics from 7pm–9pm, please bring fog machine…"></textarea>
+      </div>
+
+      <!-- Price breakdown -->
+      <div id="booking-price-preview" class="price-summary"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-booking')">Back</button>
+      <button class="btn-primary" id="confirm-booking-btn" onclick="confirmBooking()">Confirm Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── BOOKING SUCCESS MODAL ── -->
+<div class="modal-overlay" id="modal-success">
+  <div class="modal" style="max-width:420px;text-align:center;">
+    <div class="modal-body" style="padding:40px 32px;">
+      <div style="font-size:56px;margin-bottom:16px;">🎉</div>
+      <div style="font-family:'Clash Display',sans-serif;font-size:24px;font-weight:700;margin-bottom:8px;">Booking Confirmed!</div>
+      <div style="color:var(--muted);font-size:14px;margin-bottom:24px;">Your booking is confirmed. The captain will contact you shortly.</div>
+      <div id="success-details" style="background:var(--bg3);border-radius:12px;padding:16px;text-align:left;font-size:13px;margin-bottom:24px;"></div>
+      <button class="btn-primary" style="width:100%;" onclick="closeModal('modal-success');switchTab('mybookings')">View My Bookings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+const API = 'http://localhost:5000/api';
+let token = localStorage.getItem('token');
+let userLocation = { latitude: null, longitude: null, address: {} };
+let allDJs = [], allEquipment = [];
+let cart = { dj: null, equipment: [] }; // dj: { id, captainId, name, hourlyRate } | equipment: [{ ...eq, qty, days }]
+
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  updateAuthBtn();
+  detectLocation();
+  loadDJs();
+
+  // Set min date to today
+  document.getElementById('b-date').min = new Date().toISOString().split('T')[0];
+});
+
+function updateAuthBtn() {
+  const btn = document.getElementById('auth-btn');
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  if (token && user) {
+    btn.textContent = user.firstName || 'Account';
+  } else {
+    btn.textContent = 'Login';
+  }
+}
+
+function handleAuthBtn() {
+  if (token) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    token = null;
+    updateAuthBtn();
+    toast('Logged out');
+  } else {
+    window.location.href = 'login.html';
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+// ── Location ──────────────────────────────────────────────────
+function detectLocation() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(async pos => {
+    userLocation.latitude = pos.coords.latitude;
+    userLocation.longitude = pos.coords.longitude;
+    document.getElementById('loc-dot').classList.remove('detecting');
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+      const d = await res.json();
+      userLocation.address = {
+        street: d.address?.road || '',
+        city: d.address?.city || d.address?.town || d.address?.village || '',
+        state: d.address?.state || '',
+        zipCode: d.address?.postcode || '',
+        country: d.address?.country || 'India'
+      };
+      document.getElementById('loc-text').textContent = `📍 ${userLocation.address.city}, ${userLocation.address.state}`;
+      // Pre-fill booking form
+      document.getElementById('b-city').value = userLocation.address.city;
+      document.getElementById('b-state').value = userLocation.address.state;
+      document.getElementById('b-zip').value = userLocation.address.zipCode;
+      document.getElementById('loc-autofill').textContent = `Delivering to: ${userLocation.address.city}, ${userLocation.address.state}`;
+    } catch { document.getElementById('loc-text').textContent = '📍 Location detected'; }
+  }, () => {
+    document.getElementById('loc-dot').classList.remove('detecting');
+    document.getElementById('loc-text').textContent = '📍 Location not available (manual entry below)';
+  });
+}
+
+// ── API ───────────────────────────────────────────────────────
+async function apiFetch(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${API}${path}`, { ...opts, headers: { ...headers, ...(opts.headers||{}) } });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
+}
+
+// ── Tab switching ──────────────────────────────────────────────
+function switchTab(tab) {
+  ['djs','equipment','mybookings'].forEach(t => {
+    document.getElementById(`tab-content-${t}`).style.display = t === tab ? '' : 'none';
+    document.getElementById(`tab-${t}`)?.classList.toggle('active', t === tab);
+    document.querySelectorAll('.nav-link').forEach((nl, i) => {
+      if (['djs','equipment','mybookings'][i] === tab) nl.classList.add('active');
+      else nl.classList.remove('active');
+    });
+  });
+  if (tab === 'mybookings') loadMyBookings();
+}
+
+// ═══════════════════════════════════════════
+//  DJS
+// ═══════════════════════════════════════════
+async function loadDJs() {
+  try {
+    const data = await apiFetch('/services/djs');
+    allDJs = data.data;
+    renderDJs(allDJs);
+  } catch (e) {
+    document.getElementById('djs-grid').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><h3>Could not load DJs</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function filterDJs(q = '', genre = '') {
+  const filtered = allDJs.filter(d =>
+    (!q || d.name.toLowerCase().includes(q.toLowerCase())) &&
+    (!genre || (d.genres||[]).includes(genre))
+  );
+  renderDJs(filtered);
+}
+
+const djEmojis = { default:'🎧' };
+
+function renderDJs(djs) {
+  if (!djs.length) {
+    document.getElementById('djs-grid').innerHTML = `<div class="empty"><div class="empty-icon">🎧</div><h3>No DJs found</h3><p>Try adjusting your search.</p></div>`;
+    return;
+  }
+  document.getElementById('djs-grid').innerHTML = djs.map(d => {
+    const inCart = cart.dj?.id === d.id;
+    return `
+    <div class="dj-card">
+      <div class="dj-card-img">🎧<div class="dj-avail-dot"></div></div>
+      <div class="dj-card-body">
+        <div class="dj-name">${d.name}</div>
+        <div class="dj-captain">by ${d.captain?.businessName || 'Captain'} · ${d.captain?.locationCity || ''}</div>
+        <div class="genre-pills">${(d.genres||[]).slice(0,4).map(g=>`<span class="genre-pill">${g}</span>`).join('')}</div>
+        <div class="dj-meta">
+          <div class="dj-rate">₹${Number(d.hourlyRate).toLocaleString()}<small>/hr</small></div>
+          ${d.ratingAverage ? `<div class="dj-rating">⭐ ${d.ratingAverage} <span style="color:var(--muted);font-size:11px;">(${d.ratingCount})</span></div>` : ''}
+        </div>
+        <button class="btn-book ${inCart ? 'added' : ''}" onclick="selectDJ(${JSON.stringify(d).replace(/"/g,'&quot;')})">
+          ${inCart ? '✅ Selected' : 'Book This DJ'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectDJ(dj) {
+  if (cart.dj?.id === dj.id) {
+    cart.dj = null;
+    toast('DJ removed from selection');
+  } else {
+    cart.dj = { id: dj.id, captainId: dj.captainId, name: dj.name, hourlyRate: dj.hourlyRate, minimumHours: dj.minimumHours };
+    toast(`${dj.name} selected!`);
+  }
+  updateCartCount();
+  renderDJs(allDJs);
+}
+
+// ═══════════════════════════════════════════
+//  EQUIPMENT
+// ═══════════════════════════════════════════
+async function loadEquipment() {
+  if (allEquipment.length) return; // already loaded
+  try {
+    const data = await apiFetch('/services/equipment');
+    allEquipment = data.data;
+    renderEquipment(allEquipment);
+  } catch (e) {
+    document.getElementById('eq-grid').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><h3>Could not load equipment</h3></div>`;
+  }
+}
+
+function filterEq(q = '', cat = '') {
+  const filtered = allEquipment.filter(e =>
+    (!q || e.name.toLowerCase().includes(q.toLowerCase()) || (e.brand||'').toLowerCase().includes(q.toLowerCase())) &&
+    (!cat || e.category === cat)
+  );
+  renderEquipment(filtered);
+}
+
+const catEmoji = { Speaker:'🔊', Mixer:'🎛️', Microphone:'🎤', Lighting:'💡', 'Fog Machine':'🌫️', Laser:'🔆', 'LED Panel':'💡', Amplifier:'📢', Subwoofer:'🔉', 'DJ Controller':'🎚️', Projector:'📽️', 'Karaoke System':'🎤', 'CO2 Cannon':'💨', Other:'📦', Turntable:'🎵', 'LED Screen':'📺' };
+
+function renderEquipment(eqs) {
+  if (!eqs.length) {
+    document.getElementById('eq-grid').innerHTML = `<div class="empty"><div class="empty-icon">🔊</div><h3>No equipment found</h3><p>Try adjusting your search.</p></div>`;
+    return;
+  }
+
+  document.getElementById('eq-grid').innerHTML = eqs.map(e => {
+    const cartItem = cart.equipment.find(i => i.id === e.id);
+    const inCart = !!cartItem;
+    return `
+    <div class="eq-card">
+      <div class="eq-card-img">${catEmoji[e.category] || '📦'}</div>
+      <div class="eq-card-body">
+        <div class="eq-name">${e.name}</div>
+        <div class="eq-brand">${[e.brand, e.model].filter(Boolean).join(' · ') || e.captain?.businessName || ''}</div>
+        <span class="eq-chip">${e.category}</span>
+        <div class="eq-meta">
+          <div class="eq-rate">₹${Number(e.dailyRate).toLocaleString()}<small>/day</small></div>
+          <div class="eq-qty"><strong>${e.availableQuantity}</strong> available</div>
+        </div>
+        ${e.deliveryChargePerKm ? `<div style="font-size:11px;color:var(--muted);margin-top:4px;">+₹${e.deliveryChargePerKm}/km delivery</div>` : ''}
+        <button class="btn-add-cart ${inCart ? 'added' : ''}" onclick="toggleEquipmentCart(${JSON.stringify(e).replace(/"/g,'&quot;')})">
+          ${inCart ? `✅ Added (×${cartItem.qty})` : '+ Add to Cart'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleEquipmentCart(eq) {
+  const idx = cart.equipment.findIndex(i => i.id === eq.id);
+  if (idx >= 0) {
+    cart.equipment.splice(idx, 1);
+    toast(`${eq.name} removed`);
+  } else {
+    const qty = parseInt(prompt(`How many "${eq.name}" do you need?`, '1') || '1');
+    const days = parseInt(prompt('For how many days?', '1') || '1');
+    if (qty < 1 || days < 1) return;
+    cart.equipment.push({ ...eq, qty: Math.min(qty, eq.availableQuantity), days });
+    toast(`${eq.name} added to cart!`);
+  }
+  updateCartCount();
+  renderEquipment(allEquipment);
+}
+
+// ── Cart ──────────────────────────────────────────────────────
+function updateCartCount() {
+  const n = (cart.dj ? 1 : 0) + cart.equipment.length;
+  ['cart-count','cart-count-nav'].forEach(id => document.getElementById(id).textContent = n);
+}
+
+function openCartModal() {
+  loadEquipment(); // lazy load
+  const body = document.getElementById('cart-modal-body');
+  const total = calcTotal();
+  const dur = parseInt(document.getElementById('b-duration')?.value) || 5;
+
+  if (!cart.dj && !cart.equipment.length) {
+    body.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);">
+      <div style="font-size:40px;margin-bottom:12px;">🛒</div>
+      <div style="font-weight:600;font-size:16px;">Your cart is empty</div>
+      <div style="font-size:13px;margin-top:6px;">Browse DJs and equipment to get started.</div>
+    </div>`;
+    document.getElementById('cart-proceed-btn').disabled = true;
+    document.getElementById('modal-cart').classList.add('open');
+    return;
+  }
+
+  let html = '';
+
+  if (cart.dj) {
+    html += `<div class="cart-item">
+      <div><div class="cart-item-name">🎧 ${cart.dj.name}</div><div class="cart-item-detail">₹${Number(cart.dj.hourlyRate).toLocaleString()}/hr · min ${cart.dj.minimumHours} hr</div></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="font-weight:700;color:var(--accent2);">₹${Number(cart.dj.hourlyRate * dur).toLocaleString()}</div>
+        <button class="cart-item-remove" onclick="cart.dj=null;updateCartCount();openCartModal();">✕</button>
+      </div>
+    </div>`;
+  }
+
+  cart.equipment.forEach((e, i) => {
+    html += `<div class="cart-item">
+      <div><div class="cart-item-name">${catEmoji[e.category]||'📦'} ${e.name}</div><div class="cart-item-detail">×${e.qty} · ${e.days} day(s) · ₹${Number(e.dailyRate).toLocaleString()}/day</div></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="font-weight:700;color:var(--teal);">₹${Number(e.dailyRate * e.qty * e.days).toLocaleString()}</div>
+        <button class="cart-item-remove" onclick="cart.equipment.splice(${i},1);updateCartCount();openCartModal();">✕</button>
+      </div>
+    </div>`;
+  });
+
+  html += `<div class="price-summary">
+    ${cart.dj ? `<div class="price-row"><span>DJ Fee (${dur} hrs)</span><span>₹${Number(cart.dj.hourlyRate*dur).toLocaleString()}</span></div>` : ''}
+    ${cart.equipment.length ? `<div class="price-row"><span>Equipment</span><span>₹${cart.equipment.reduce((s,e)=>s+e.dailyRate*e.qty*e.days,0).toLocaleString()}</span></div>` : ''}
+    <div class="price-row"><span style="color:var(--muted);">Delivery</span><span style="color:var(--muted);">Calculated at checkout</span></div>
+    <div class="price-row total"><span>Estimated Total</span><span>₹${total.toLocaleString()}</span></div>
+  </div>`;
+
+  body.innerHTML = html;
+  document.getElementById('cart-proceed-btn').disabled = false;
+  document.getElementById('modal-cart').classList.add('open');
+}
+
+function calcTotal(dur) {
+  dur = dur || parseInt(document.getElementById('b-duration')?.value) || 5;
+  let t = 0;
+  if (cart.dj) t += cart.dj.hourlyRate * dur;
+  cart.equipment.forEach(e => t += e.dailyRate * e.qty * e.days);
+  return t;
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function proceedToBooking() {
+  if (!token) { toast('Please login to book', 'error'); window.location.href = 'login.html'; return; }
+  closeModal('modal-cart');
+  updatePricePreview();
+  document.getElementById('modal-booking').classList.add('open');
+}
+
+function updatePricePreview() {
+  const dur = parseInt(document.getElementById('b-duration').value) || 5;
+  const total = calcTotal(dur);
+  const html = `
+    ${cart.dj ? `<div class="price-row"><span>🎧 DJ Fee (${dur}h × ₹${Number(cart.dj.hourlyRate).toLocaleString()})</span><span>₹${Number(cart.dj.hourlyRate*dur).toLocaleString()}</span></div>` : ''}
+    ${cart.equipment.map(e=>`<div class="price-row"><span>${catEmoji[e.category]||'📦'} ${e.name} ×${e.qty} · ${e.days}d</span><span>₹${Number(e.dailyRate*e.qty*e.days).toLocaleString()}</span></div>`).join('')}
+    <div class="price-row"><span style="color:var(--muted);">Delivery fee</span><span style="color:var(--muted);">Calculated</span></div>
+    <div class="price-row total"><span>Total</span><span>₹${total.toLocaleString()}+</span></div>`;
+  document.getElementById('booking-price-preview').innerHTML = html;
+}
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'b-duration') updatePricePreview();
+});
+
+// ── Confirm booking ───────────────────────────────────────────
+async function confirmBooking() {
+  const btn = document.getElementById('confirm-booking-btn');
+
+  // Determine captainId: prefer from DJ, else from first equipment
+  const captainId = cart.dj?.captainId || cart.equipment[0]?.captainId;
+  if (!captainId) return toast('Could not determine captain. Please reselect.', 'error');
+
+  const date = document.getElementById('b-date').value;
+  const start = document.getElementById('b-start-time').value;
+  const end = document.getElementById('b-end-time').value;
+  const dur = parseInt(document.getElementById('b-duration').value);
+  const city = document.getElementById('b-city').value.trim();
+
+  if (!date || !start || !end || !dur) return toast('Please fill in date and time', 'error');
+  if (!userLocation.latitude && !city) return toast('Please allow location or enter your city', 'error');
+
+  const payload = {
+    captainId,
+    captainDJId: cart.dj?.id || undefined,
+    equipmentItems: cart.equipment.map(e => ({ equipmentId: e.id, quantity: e.qty, days: e.days })),
+    eventType: document.getElementById('b-event-type').value,
+    eventDate: date,
+    startTime: start,
+    endTime: end,
+    durationHours: dur,
+    guestCount: parseInt(document.getElementById('b-guests').value) || undefined,
+    specialRequests: document.getElementById('b-requests').value.trim() || undefined,
+    deliveryLocation: {
+      latitude: userLocation.latitude || 26.9124,
+      longitude: userLocation.longitude || 75.7873,
+      street: document.getElementById('b-street').value.trim() || undefined,
+      city: city || userLocation.address.city,
+      state: document.getElementById('b-state').value.trim() || userLocation.address.state,
+      zipCode: document.getElementById('b-zip').value.trim() || userLocation.address.zipCode,
+      country: 'India'
+    }
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Confirming…';
+
+  try {
+    const data = await apiFetch('/services/bookings', { method: 'POST', body: JSON.stringify(payload) });
+    const b = data.data;
+    closeModal('modal-booking');
+
+    document.getElementById('success-details').innerHTML = `
+      <div style="margin-bottom:8px;"><strong>Booking #${b.id}</strong></div>
+      <div style="color:var(--muted);">📅 ${new Date(b.eventDate).toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'long'})} · ${b.startTime}–${b.endTime}</div>
+      <div style="color:var(--muted);">📍 ${b.deliveryCity || 'Your location'}</div>
+      <div style="font-family:'Clash Display',sans-serif;font-size:20px;font-weight:700;color:var(--teal);margin-top:10px;">₹${Number(b.totalAmount).toLocaleString()}</div>`;
+
+    document.getElementById('modal-success').classList.add('open');
+    cart = { dj: null, equipment: [] };
+    updateCartCount();
+    renderDJs(allDJs);
+  } catch (e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Confirm Booking';
+  }
+}
+
+// ── My Bookings ───────────────────────────────────────────────
+async function loadMyBookings() {
+  if (!token) {
+    document.getElementById('my-bookings-content').innerHTML = `
+      <div class="empty"><div class="empty-icon">🔐</div>
+        <h3>Login to view bookings</h3>
+        <p>You need to be logged in to see your booking history.</p>
+        <button class="btn-primary" style="margin-top:16px;" onclick="window.location.href='login.html'">Login</button>
+      </div>`;
+    return;
+  }
+  try {
+    const data = await apiFetch('/services/bookings/my?limit=20');
+    const bookings = data.data;
+    if (!bookings.length) {
+      document.getElementById('my-bookings-content').innerHTML = `
+        <div class="empty"><div class="empty-icon">📋</div>
+          <h3>No bookings yet</h3><p>Your confirmed bookings will appear here.</p>
+        </div>`;
+      return;
+    }
+
+    const statusColor = { 'Pending':'#f59e0b','Confirmed':'#3b82f6','Equipment Dispatched':'#8b5cf6','In Progress':'#ea580c','Completed':'#10b981','Cancelled':'#ef4444' };
+
+    document.getElementById('my-bookings-content').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        ${bookings.map(b => {
+          const d = new Date(b.eventDate);
+          return `
+          <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-family:'Clash Display',sans-serif;font-weight:600;font-size:16px;">${b.eventType}</div>
+                <div style="font-size:12px;color:var(--muted);">Booking #${b.id} · ${b.captain?.businessName || 'Captain'}</div>
+              </div>
+              <span style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;background:${statusColor[b.status]}22;color:${statusColor[b.status]};">${b.status}</span>
+            </div>
+            <div style="padding:14px 20px;display:flex;flex-wrap:wrap;gap:16px;font-size:13px;">
+              <div>📅 <strong>${d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</strong><br><small style="color:var(--muted);">${b.startTime}–${b.endTime}</small></div>
+              <div>📍 <strong>${b.deliveryCity || '—'}</strong><br><small style="color:var(--muted);">${b.deliveryDistanceKm ? b.deliveryDistanceKm + ' km' : ''}</small></div>
+              ${b.dj ? `<div>🎧 <strong>${b.dj.name}</strong></div>` : ''}
+              <div>💰 <strong style="color:var(--teal);font-family:'Clash Display',sans-serif;font-size:15px;">₹${Number(b.totalAmount).toLocaleString()}</strong></div>
+            </div>
+            <div style="padding:10px 20px;border-top:1px solid var(--border);display:flex;gap:8px;">
+              ${['Pending','Confirmed'].includes(b.status) ? `
+                <button onclick="cancelBooking(${b.id})" style="padding:7px 14px;border:1.5px solid #fca5a5;border-radius:8px;background:transparent;color:#ef4444;font-size:12px;font-weight:600;cursor:pointer;">Cancel</button>` : ''}
+              ${b.status === 'Completed' && !b.rating ? `
+                <button onclick="reviewBooking(${b.id})" style="padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;">⭐ Leave Review</button>` : ''}
+              ${b.rating ? `<span style="font-size:12px;color:var(--muted);">⭐ You rated ${b.rating}/5</span>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function cancelBooking(id) {
+  if (!confirm('Cancel this booking?')) return;
+  try {
+    await apiFetch(`/services/bookings/${id}`, { method: 'DELETE' });
+    toast('Booking cancelled');
+    loadMyBookings();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function reviewBooking(id) {
+  const rating = parseInt(prompt('Rate your experience (1–5):'));
+  if (!rating || rating < 1 || rating > 5) return;
+  const review = prompt('Write a short review (optional):') || '';
+  try {
+    await apiFetch(`/services/bookings/${id}/review`, { method: 'PUT', body: JSON.stringify({ rating, review }) });
+    toast('Review submitted! Thanks 🎉');
+    loadMyBookings();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// Lazy-load equipment when tab is switched to it
+document.getElementById('tab-equipment').addEventListener('click', () => loadEquipment());
+</script>
+</body>
+</html>
