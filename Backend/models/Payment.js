@@ -27,12 +27,12 @@ const Payment = sequelize.define('Payment', {
   razorpayOrderId: {
     type: DataTypes.STRING(100),
     allowNull: false,
-    unique: true
+    // unique: true
   },
   razorpayPaymentId: {
     type: DataTypes.STRING(100),
     allowNull: true,
-    unique: true
+    // unique: true
   },
   razorpaySignature: {
     type: DataTypes.STRING(255),

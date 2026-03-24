@@ -1,21 +1,14 @@
 /**
  * Backend/routes/firebase-auth.js
  *
- * Drop this file into your backend and mount it in server.js:
+ * Mount in server.js:
  *   app.use('/api/auth', require('./routes/firebase-auth'));
  *
  * Prerequisites:
  *   npm install firebase-admin
  *
- * One-time setup:
- *   1. Go to Firebase Console → Project Settings → Service Accounts
- *   2. Generate a new private key → download JSON
- *   3. Save as Backend/firebase-service-account.json (add to .gitignore!)
- *   4. Set FIREBASE_SERVICE_ACCOUNT_PATH in .env, OR paste the JSON inline below
- *
  * ENV vars needed:
  *   FIREBASE_SERVICE_ACCOUNT_PATH=./firebase-service-account.json
- *   (or) FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL
  */
 
 const express = require('express');
@@ -23,15 +16,39 @@ const router  = express.Router();
 
 // ── Firebase Admin init (lazy, once) ─────────────────────────────────────────
 let adminApp = null;
+
 function getAdmin() {
   if (adminApp) return adminApp;
+
   const admin = require('firebase-admin');
-  if (admin.apps.length) { adminApp = admin; return adminApp; }
+  if (admin.apps.length) {
+    adminApp = admin;
+    return adminApp;
+  }
 
   let credential;
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
-    const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
+
+  const saPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+
+  if (saPath) {
+    const path = require('path');
+    const fs   = require('fs');
+
+    // Resolve relative to Backend/ folder
+    const resolved = path.resolve(__dirname, '..', saPath.replace(/^\.\//, ''));
+
+    console.log('[Firebase] Loading service account from:', resolved);
+
+    if (!fs.existsSync(resolved)) {
+      throw new Error(
+        `Firebase service account file not found at: ${resolved}\n` +
+        `Check FIREBASE_SERVICE_ACCOUNT_PATH in your .env file.`
+      );
+    }
+
+    const serviceAccount = require(resolved);
     credential = admin.credential.cert(serviceAccount);
+
   } else if (process.env.FIREBASE_PRIVATE_KEY) {
     credential = admin.credential.cert({
       projectId:   process.env.FIREBASE_PROJECT_ID,
@@ -39,11 +56,15 @@ function getAdmin() {
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     });
   } else {
-    throw new Error('Firebase Admin credentials not configured. See Backend/routes/firebase-auth.js for setup.');
+    throw new Error(
+      'Firebase Admin credentials not configured.\n' +
+      'Set FIREBASE_SERVICE_ACCOUNT_PATH in your .env file.'
+    );
   }
 
   admin.initializeApp({ credential });
   adminApp = admin;
+  console.log('[Firebase] Admin SDK initialized successfully');
   return adminApp;
 }
 
@@ -52,27 +73,55 @@ router.post('/firebase-login', async (req, res) => {
   try {
     const { idToken, phone } = req.body;
 
+    // ── Validate request ──────────────────────────────────────────────────────
     if (!idToken) {
-      return res.status(400).json({ success: false, message: 'idToken is required' });
+      return res.status(400).json({
+        success: false,
+        message: 'idToken is required',
+      });
     }
 
-    // 1. Verify the Firebase ID token server-side
-    const admin   = getAdmin();
-    const decoded = await admin.auth().verifyIdToken(idToken);
+    // ── Verify Firebase ID token ──────────────────────────────────────────────
+    let decoded;
+    try {
+      const admin = getAdmin();
+      decoded = await admin.auth().verifyIdToken(idToken);
+    } catch (firebaseErr) {
+      console.error('[Firebase] Token verification failed:', firebaseErr.message);
 
-    // Phone number comes from the decoded token (more trustworthy than client-sent `phone`)
+      // Map Firebase error codes to friendly messages
+      const code = firebaseErr.code ?? '';
+      if (code === 'auth/id-token-expired') {
+        return res.status(401).json({ success: false, message: 'OTP session expired. Request a new code.' });
+      }
+      if (code === 'auth/id-token-revoked') {
+        return res.status(401).json({ success: false, message: 'Session revoked. Please log in again.' });
+      }
+      if (code === 'auth/argument-error' || code === 'auth/invalid-id-token') {
+        return res.status(401).json({ success: false, message: 'Invalid token. Please try again.' });
+      }
+      return res.status(401).json({ success: false, message: 'Phone verification failed.' });
+    }
+
+    // ── Extract phone number ──────────────────────────────────────────────────
     const phoneNumber = decoded.phone_number;
     if (!phoneNumber) {
-      return res.status(400).json({ success: false, message: 'No phone number in Firebase token' });
+      return res.status(400).json({
+        success: false,
+        message: 'No phone number in Firebase token. Ensure Phone Auth is used.',
+      });
     }
 
-    // Strip leading + and country code to get 10-digit local number for DB matching
+    // Strip country code → 10-digit local number for DB
     const localPhone = phoneNumber.replace(/^\+91/, '').replace(/\D/g, '');
+    console.log(`[Firebase] Verified phone: ${phoneNumber} → local: ${localPhone}`);
 
-    // 2. Find or create user in your MySQL DB
-    const { User } = require('../models');
-    const { Op }   = require('sequelize');
-    const jwt      = require('jsonwebtoken');
+    // ── Find or create user ───────────────────────────────────────────────────
+    const { User }   = require('../models');
+    const { Op }     = require('sequelize');
+    const jwt        = require('jsonwebtoken');
+    const bcrypt     = require('bcryptjs');
+    const crypto     = require('crypto');
 
     let user = await User.findOne({
       where: {
@@ -81,56 +130,79 @@ router.post('/firebase-login', async (req, res) => {
           { phone: phoneNumber },
         ],
       },
-      attributes: { exclude: ['password'] },
+      attributes: { exclude: [] }, // include all fields
     });
 
     if (!user) {
-      // Auto-register: create a minimal user record
-      // The user can fill in their name/email later from the Profile screen
+      console.log(`[Firebase] Creating new user for phone: ${localPhone}`);
+
+      // Generate a placeholder email so the NOT NULL constraint is satisfied
+      const placeholderEmail = `${localPhone}@basswala.app`;
+
+      // Check if placeholder email already exists (edge case)
+      const emailExists = await User.findOne({ where: { email: placeholderEmail } });
+      const finalEmail  = emailExists
+        ? `${localPhone}_${Date.now()}@basswala.app`
+        : placeholderEmail;
+
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
       user = await User.create({
-        phone:     localPhone,
-        firstName: 'Basswala',
-        lastName:  'User',
-        email:     `${localPhone}@basswala.app`, // placeholder — user can update
-        password:  require('bcryptjs').hashSync(require('crypto').randomBytes(16).toString('hex'), 10),
-        role:      'user',
-        isActive:  true,
-        isVerified: true, // phone is already verified by Firebase
+        phone:      localPhone,
+        firstName:  'Basswala',
+        lastName:   'User',
+        email:      finalEmail,
+        password:   hashedPassword,  // random, user will never use this
+        role:       'user',
+        isActive:   true,
+        isVerified: true,  // phone verified by Firebase
       });
+
+      console.log(`[Firebase] New user created with id: ${user.id}`);
     } else if (!user.isActive) {
-      return res.status(401).json({ success: false, message: 'Account is deactivated' });
+      return res.status(401).json({
+        success: false,
+        message: 'Account is deactivated. Contact support.',
+      });
+    } else {
+      console.log(`[Firebase] Existing user found with id: ${user.id}`);
     }
 
-    // 3. Issue your app's JWT
+    // ── Issue app JWT ─────────────────────────────────────────────────────────
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not set in environment variables.');
+    }
+
     const token = jwt.sign(
       { id: user.id },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRE || '7d' }
     );
 
-    // 4. Update last login
+    // Update last login
     await user.update({ lastLogin: new Date() });
 
-    const userObj = user.toJSON ? user.toJSON() : user;
+    // Remove sensitive fields from response
+    const userObj = user.toJSON ? user.toJSON() : { ...user.dataValues };
     delete userObj.password;
 
-    return res.status(200).json({ success: true, token, user: userObj });
+    return res.status(200).json({
+      success: true,
+      token,
+      user: userObj,
+    });
 
   } catch (error) {
-    console.error('Firebase login error:', error);
+    // This catches unexpected errors (DB issues, missing env vars, etc.)
+    console.error('[Firebase Login] Unexpected error:', error);
 
-    // Firebase token errors
-    if (error.code === 'auth/id-token-expired') {
-      return res.status(401).json({ success: false, message: 'OTP session expired. Please request a new code.' });
-    }
-    if (error.code === 'auth/id-token-revoked') {
-      return res.status(401).json({ success: false, message: 'Authentication revoked. Please log in again.' });
-    }
-    if (error.code && error.code.startsWith('auth/')) {
-      return res.status(401).json({ success: false, message: 'Phone verification failed.' });
-    }
-
-    return res.status(500).json({ success: false, message: 'Error during Firebase login', error: error.message });
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error during Firebase login.',
+      // Only expose error detail in development
+      ...(process.env.NODE_ENV === 'development' && { error: error.message }),
+    });
   }
 });
 
