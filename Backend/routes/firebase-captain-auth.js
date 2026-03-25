@@ -35,6 +35,8 @@ function getAdmin() {
 }
 
 // ── POST /api/captain/auth/firebase-login ─────────────────────────────────────
+// routes/firebase-captain-auth.js
+
 router.post('/firebase-login', async (req, res) => {
   try {
     const { idToken } = req.body;
@@ -42,79 +44,69 @@ router.post('/firebase-login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'idToken is required' });
     }
 
-    // Verify Firebase token
-    let decoded;
-    try {
-      decoded = await getAdmin().auth().verifyIdToken(idToken);
-    } catch (e) {
-      const code = e.code ?? '';
-      if (code === 'auth/id-token-expired')
-        return res.status(401).json({ success: false, message: 'OTP session expired. Request a new code.' });
-      return res.status(401).json({ success: false, message: 'Phone verification failed.' });
-    }
-
+    const admin = getAdmin();
+    const decoded = await admin.auth().verifyIdToken(idToken);
     const phoneNumber = decoded.phone_number;
+
     if (!phoneNumber) {
       return res.status(400).json({ success: false, message: 'No phone number in token.' });
     }
 
     const localPhone = phoneNumber.replace(/^\+91/, '').replace(/\D/g, '');
-    console.log(`[Captain Firebase] Verified: ${phoneNumber} → ${localPhone}`);
 
     const { User, Captain } = require('../models');
-    const { Op } = require('sequelize');
     const jwt = require('jsonwebtoken');
-    const bcrypt = require('bcryptjs');
-    const crypto = require('crypto');
 
-    // Find or create the user (with role 'captain')
     let user = await User.findOne({
-      where: { [Op.or]: [{ phone: localPhone }, { phone: phoneNumber }] },
+      where: { phone: localPhone },
       include: [{ model: Captain, as: 'captainProfile', required: false }]
     });
 
     let isNewCaptain = false;
 
     if (!user) {
+      // Create new captain
       const placeholderEmail = `captain_${localPhone}@basswala.app`;
-      const emailExists = await User.findOne({ where: { email: placeholderEmail } });
-      const finalEmail = emailExists ? `captain_${localPhone}_${Date.now()}@basswala.app` : placeholderEmail;
-
-      const hashedPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
+      const hashedPassword = await require('bcryptjs').hash(require('crypto').randomBytes(16).toString('hex'), 10);
 
       user = await User.create({
         phone: localPhone,
         firstName: 'Captain',
         lastName: localPhone.slice(-4),
-        email: finalEmail,
+        email: placeholderEmail,
         password: hashedPassword,
         role: 'captain',
         isActive: true,
         isVerified: true
       });
 
-      // Auto-create captain profile
       await Captain.create({ userId: user.id });
       isNewCaptain = true;
-      console.log(`[Captain Firebase] New captain created id: ${user.id}`);
-    } else if (!user.isActive) {
-      return res.status(401).json({ success: false, message: 'Account deactivated. Contact support.' });
-    } else if (user.role !== 'captain' && user.role !== 'admin') {
-      // Upgrade existing user to captain
-      await user.update({ role: 'captain' });
+
+    } else {
+      // Existing user → upgrade to captain if needed
+      if (user.role !== 'captain' && user.role !== 'admin') {
+        await user.update({ role: 'captain' });
+      }
+
+      // CRITICAL: Create captain profile if it doesn't exist
       if (!user.captainProfile) {
         await Captain.create({ userId: user.id });
         isNewCaptain = true;
+        console.log(`[Captain] Created missing captain profile for user ${user.id}`);
       }
     }
 
     await user.update({ lastLogin: new Date() });
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE || '7d'
-    });
+    // Sign token with role
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRE || '7d' }
+    );
 
-    // Reload with captain profile
+    // Fetch fresh user with captainProfile
     const fullUser = await User.findByPk(user.id, {
       attributes: { exclude: ['password'] },
       include: [{ model: Captain, as: 'captainProfile', required: false }]
@@ -130,11 +122,7 @@ router.post('/firebase-login', async (req, res) => {
 
   } catch (error) {
     console.error('[Captain Firebase Login] Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error.',
-      ...(process.env.NODE_ENV === 'development' && { error: error.message })
-    });
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 });
 
