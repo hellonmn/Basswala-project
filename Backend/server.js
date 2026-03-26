@@ -4,51 +4,44 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { connectDB } = require('./config/database');
+const WebSocket = require('ws');   // ← Now installed
 
-// Load env vars
+// Load environment variables
 dotenv.config();
 
 // Connect to database
 connectDB();
 
 const app = express();
-app.set('trust proxy', 1); 
+app.set('trust proxy', 1);
 
-// Body parser middleware
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Enable CORS
 app.use(cors());
-
-// Set security headers
 app.use(helmet());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  windowMs: 10 * 60 * 10000, // 10 minutes
+  max: 10000
 });
 app.use('/api/', limiter);
 
-// Mount routes
+// Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/djs', require('./routes/djs'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/payments', require('./routes/payments'));
-app.use('/api/auth', require('./routes/firebase-auth'))
+app.use('/api/auth', require('./routes/firebase-auth'));
 
 app.use('/api/captain/auth', require('./routes/firebase-captain-auth'));
- 
-// Captain management routes (DJs, equipment, bookings)
 app.use('/api/captain', require('./routes/captain'));
- 
-// User-facing services (browse captains, DJs, equipment, create bookings)
 app.use('/api/services', require('./routes/services'));
 
-// Health check route
+// Health check
 app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -57,22 +50,15 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Welcome route
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Welcome to DJ Rental API',
-    version: '1.0.0',
-    database: 'MySQL',
-    endpoints: {
-      auth: '/api/auth',
-      djs: '/api/djs',
-      bookings: '/api/bookings'
-    }
+    message: 'Welcome to Basswala DJ Rental API',
+    version: '1.0.0'
   });
 });
 
-// Error handler middleware
+// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.statusCode || 500).json({
@@ -81,7 +67,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Handle 404
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -92,13 +78,22 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  console.log(`🚀 Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
 
+// Initialize WebSocket
+const { initWebSocket } = require('./utils/websocket');
+initWebSocket(server);
+
+console.log('✅ WebSocket server ready for real-time booking updates');
+
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-  console.log(`Error: ${err.message}`);
+process.on('unhandledRejection', (err) => {
+  console.error(`Unhandled Rejection: ${err.message}`);
   server.close(() => process.exit(1));
 });
 
-module.exports = app;
+module.exports = { 
+  app,
+  server 
+};

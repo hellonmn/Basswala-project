@@ -1,6 +1,7 @@
 const { Captain, CaptainDJ, Equipment, CaptainBooking, User } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/database');
+const { broadcastBookingUpdate } = require('../utils/websocket');
 
 // ══════════════════════════════════════════════════════
 //  CAPTAIN PROFILE
@@ -569,6 +570,7 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     await booking.save();
+    broadcastBookingUpdate(booking.id, booking);
 
     res.status(200).json({ success: true, message: `Booking status updated to ${status}`, data: booking });
   } catch (error) {
@@ -720,6 +722,7 @@ exports.generateOtp = async (req, res) => {
     booking.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     await booking.save();
+    broadcastBookingUpdate(booking.id, booking);
 
     console.log(`✅ OTP for Booking #${booking.id}: ${otp} (saved successfully)`);
 
@@ -771,6 +774,7 @@ exports.verifyOtp = async (req, res) => {
     booking.otp = null;
     booking.otpExpiresAt = null;
     await booking.save();
+    broadcastBookingUpdate(booking.id, booking);
 
     console.log(`✅ Booking #${booking.id} marked as Completed`);
 
