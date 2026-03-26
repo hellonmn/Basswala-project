@@ -23,6 +23,6 @@ router.post('/bookings', protect, s.createBooking);                  // Create b
 router.get('/bookings/my', protect, s.getMyBookings);                // My bookings
 router.get('/bookings/:id', protect, s.getBookingById);              // Single booking detail
 router.delete('/bookings/:id', protect, s.cancelBooking);            // Cancel booking
-router.put('/bookings/:id/review', protect, s.addReview);            // Submit review
+router.put('/bookings/:id/review', protect, s.addReview);          // Submit review
 
 module.exports = router;

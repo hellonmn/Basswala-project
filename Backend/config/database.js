@@ -19,14 +19,20 @@ const sequelize = new Sequelize(
   }
 );
 
+// config/database.js
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log('MySQL Database connected successfully');
-    
-    // Sync all models with database
-    await sequelize.sync({ alter: false });
-    console.log('Database synchronized');
+
+    // NEVER use alter: true in production — it accumulates duplicate indexes
+    if (process.env.NODE_ENV === 'development' && process.env.ALLOW_SYNC === 'true') {
+      await sequelize.sync({ alter: true });
+      console.log('Database synchronized (alter mode)');
+    } else {
+      // Just verify connection — don't touch schema
+      console.log('Database ready (sync skipped)');
+    }
   } catch (error) {
     console.error('Unable to connect to the database:', error);
     process.exit(1);

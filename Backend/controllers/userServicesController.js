@@ -345,33 +345,86 @@ exports.getMyBookings = async (req, res) => {
 };
 
 // GET /api/services/bookings/:id
+// GET /api/services/bookings/:id   → For logged-in USER
 exports.getBookingById = async (req, res) => {
   try {
+    const bookingId = req.params.id;
+    const userId = req.user.id;
+
     const booking = await CaptainBooking.findOne({
-      where: { id: req.params.id, userId: req.user.id },
+      where: { 
+        id: bookingId, 
+        userId: userId 
+      },
       include: [
-        { model: Captain, as: 'captain', attributes: ['id', 'businessName', 'phone', 'locationCity', 'latitude', 'longitude'] },
-        { model: CaptainDJ, as: 'dj', required: false },
-        { model: User, as: 'user', attributes: { exclude: ['password'] } }
+        {
+          model: CaptainDJ,
+          as: 'dj',
+          attributes: ['id', 'name', 'phone', 'profilePicture', 'genres', 'hourlyRate', 'minimumHours']
+        },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'firstName', 'lastName', 'phone']
+        }
       ]
     });
-    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+
+    if (!booking) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Booking not found or does not belong to you' 
+      });
+    }
 
     const data = booking.toJSON();
 
-    // Enrich equipment
-    if (data.equipmentItems?.length > 0) {
-      const ids = data.equipmentItems.map(i => i.equipmentId);
-      const eqRecords = await Equipment.findAll({ where: { id: ids } });
-      data.equipmentDetails = data.equipmentItems.map(item => ({
-        ...item,
-        equipment: eqRecords.find(e => e.id === item.equipmentId) || null
-      }));
+    // Safely handle equipmentItems (it can be null, string, or array)
+    let items = data.equipmentItems;
+
+    if (typeof items === 'string') {
+      try {
+        items = JSON.parse(items);
+      } catch (e) {
+        items = [];
+      }
     }
 
-    res.status(200).json({ success: true, data });
+    if (!Array.isArray(items)) {
+      items = items && typeof items === 'object' ? Object.values(items) : [];
+    }
+
+    // Optional: Enrich with equipment details if you have IDs
+    if (items.length > 0) {
+      const equipmentIds = items.map(i => i?.equipmentId).filter(Boolean);
+      if (equipmentIds.length > 0) {
+        const eqRecords = await Equipment.findAll({
+          where: { id: equipmentIds },
+          attributes: ['id', 'name', 'category', 'brand']
+        });
+
+        data.equipmentItems = items.map(item => ({
+          ...item,
+          equipment: eqRecords.find(e => e.id === item.equipmentId) || null
+        }));
+      } else {
+        data.equipmentItems = items;
+      }
+    } else {
+      data.equipmentItems = [];
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      data 
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('USER GET BOOKING BY ID ERROR:', error.message);
+    console.error(error.stack);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || "Failed to fetch booking details" 
+    });
   }
 };
 

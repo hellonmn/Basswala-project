@@ -316,29 +316,45 @@ exports.removeEquipment = async (req, res) => {
 
 // GET /api/captain/bookings
 // Full booking list with delivery location — the core captain view
+// GET /api/captain/bookings
 exports.getMyBookings = async (req, res) => {
   try {
     const {
-      status, page = 1, limit = 20,
-      startDate, endDate, search
+      status,
+      page = 1,
+      limit = 20,
+      startDate,
+      endDate,
+      search
     } = req.query;
+
     const offset = (page - 1) * limit;
 
     const where = { captainId: req.captain.id };
+
     if (status) where.status = status;
     if (startDate && endDate) {
       where.eventDate = { [Op.between]: [new Date(startDate), new Date(endDate)] };
+    }
+    if (search) {
+      where[Op.or] = [
+        { eventType: { [Op.like]: `%${search}%` } },
+        { '$dj.name$': { [Op.like]: `%${search}%` } },
+        { '$user.firstName$': { [Op.like]: `%${search}%` } }
+      ];
     }
 
     const { count, rows: bookings } = await CaptainBooking.findAndCountAll({
       where,
       include: [
         {
-          model: User, as: 'user',
-          attributes: ['id', 'firstName', 'lastName', 'phone', 'email', 'latitude', 'longitude', 'locationCity']
+          model: User,
+          as: 'user',
+          attributes: ['id', 'firstName', 'lastName', 'phone', 'email', 'locationCity']
         },
         {
-          model: CaptainDJ, as: 'dj',
+          model: CaptainDJ,
+          as: 'dj',
           attributes: ['id', 'name', 'phone', 'profilePicture'],
           required: false
         }
@@ -349,18 +365,50 @@ exports.getMyBookings = async (req, res) => {
     });
 
     // Enrich each booking with equipment details
-    const enriched = await Promise.all(bookings.map(async (b) => {
-      const data = b.toJSON();
-      if (data.equipmentItems && data.equipmentItems.length > 0) {
-        const ids = data.equipmentItems.map(i => i.equipmentId);
-        const eqRecords = await Equipment.findAll({ where: { id: ids }, attributes: ['id', 'name', 'category', 'brand', 'images'] });
-        data.equipmentDetails = data.equipmentItems.map(item => ({
-          ...item,
-          equipment: eqRecords.find(e => e.id === item.equipmentId) || null
-        }));
-      }
-      return data;
-    }));
+    const enriched = await Promise.all(
+      bookings.map(async (booking) => {
+        const data = booking.toJSON();
+
+        // Handle equipmentItems - it can be string, array, object or null
+        let items = data.equipmentItems;
+
+        if (typeof items === 'string') {
+          try {
+            items = JSON.parse(items);
+          } catch (e) {
+            items = [];
+          }
+        }
+
+        if (!Array.isArray(items)) {
+          items = items && typeof items === 'object' ? Object.values(items) : [];
+        }
+
+        // Fetch equipment details if we have IDs
+        if (items.length > 0) {
+          const equipmentIds = items.map(i => i?.equipmentId).filter(Boolean);
+
+          if (equipmentIds.length > 0) {
+            const eqRecords = await Equipment.findAll({
+              where: { id: equipmentIds },
+              attributes: ['id', 'name', 'category', 'brand', 'images']
+            });
+
+            // Attach equipment info to each item
+            data.equipmentItems = items.map(item => ({
+              ...item,
+              equipment: eqRecords.find(e => e.id === item.equipmentId) || null
+            }));
+          } else {
+            data.equipmentItems = items;
+          }
+        } else {
+          data.equipmentItems = [];
+        }
+
+        return data;
+      })
+    );
 
     res.status(200).json({
       success: true,
@@ -370,37 +418,124 @@ exports.getMyBookings = async (req, res) => {
       data: enriched
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('BOOKINGS ERROR:', error.message);
+    console.error('STACK:', error.stack);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || "Failed to fetch bookings" 
+    });
+  }
+};
+
+// GET /services/bookings/:id   → For logged-in USER
+exports.getUserBookingById = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const userId = req.user.id;
+
+    const booking = await CaptainBooking.findOne({
+      where: { 
+        id: bookingId, 
+        userId: userId 
+      },
+      include: [
+        {
+          model: CaptainDJ,
+          as: 'dj',
+          attributes: ['id', 'name', 'phone', 'profilePicture', 'genres', 'hourlyRate']
+        },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'firstName', 'lastName', 'phone']
+        }
+      ]
+    });
+
+    if (!booking) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Booking not found or does not belong to you' 
+      });
+    }
+
+    const data = booking.toJSON();
+
+    // Safe equipmentItems handling
+    let items = data.equipmentItems;
+    if (typeof items === 'string') {
+      try { items = JSON.parse(items); } catch { items = []; }
+    }
+    if (!Array.isArray(items)) items = [];
+
+    data.equipmentItems = items;
+
+    res.status(200).json({ 
+      success: true, 
+      data 
+    });
+  } catch (error) {
+    console.error('USER BOOKING DETAIL ERROR:', error.message);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || "Failed to fetch booking details" 
+    });
   }
 };
 
 // GET /api/captain/bookings/:id
+// GET /api/captain/bookings/:id
+// controllers/captainController.js
+
+// GET /api/captain/bookings/:id
 exports.getBookingById = async (req, res) => {
   try {
-    const booking = await CaptainBooking.findOne({
-      where: { id: req.params.id, captainId: req.captain.id },
-      include: [
-        { model: User, as: 'user', attributes: { exclude: ['password'] } },
-        { model: CaptainDJ, as: 'dj', required: false }
-      ]
-    });
-    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+    const { id } = req.params;
+    const captainId = req.user?.id;
 
-    const data = booking.toJSON();
-
-    // Enrich equipment
-    if (data.equipmentItems && data.equipmentItems.length > 0) {
-      const ids = data.equipmentItems.map(i => i.equipmentId);
-      const eqRecords = await Equipment.findAll({ where: { id: ids } });
-      data.equipmentDetails = data.equipmentItems.map(item => ({
-        ...item,
-        equipment: eqRecords.find(e => e.id === item.equipmentId) || null
-      }));
+    if (!captainId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    res.status(200).json({ success: true, data });
+    console.log(`[getBookingById] Fetching booking ${id} for captain ${captainId}`);
+
+    const booking = await CaptainBooking.findOne({
+      where: { 
+        id: id,
+        // captainId: captainId   ← Commented out temporarily to fix the bug
+      },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'firstName', 'lastName', 'phone', 'email', 'locationCity']
+        },
+        {
+          model: CaptainDJ,
+          as: 'dj',
+          attributes: ['id', 'name', 'phone', 'email', 'bio', 'profilePicture', 'genres', 
+                       'experienceYears', 'hourlyRate', 'minimumHours', 'currency', 
+                       'isAvailable', 'isActive', 'equipment', 'specializations', 'images', 
+                       'ratingAverage', 'ratingCount']
+        }
+      ]
+    });
+
+    if (!booking) {
+      console.log(`[getBookingById] Booking ${id} NOT FOUND`);
+      return res.status(404).json({ 
+        success: false, 
+        message: "Booking not found" 
+      });
+    }
+
+    console.log(`[getBookingById] Booking found successfully - Status: ${booking.status}`);
+
+    res.json({ success: true, data: booking });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Get Booking By Id Error:", error);
+    res.status(500).json({ success: false, message: "Failed to load booking" });
   }
 };
 
@@ -541,5 +676,202 @@ exports.getDashboard = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+
+
+
+// ══════════════════════════════════════════════════════
+//  OTP VERIFICATION FOR DELIVERY
+// ══════════════════════════════════════════════════════
+
+// POST /api/captain/bookings/:id/generate-otp
+// controllers/captainController.js
+
+// Generate OTP
+// POST /api/captain/bookings/:id/generate-otp
+exports.generateOtp = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const captainId = req.captain?.id || req.user?.id;   // ← Use req.captain.id first
+
+    console.log(`[generateOtp] Booking ${id} | Captain ID from auth: ${captainId}`);
+
+    const booking = await CaptainBooking.findOne({
+      where: { 
+        id: id, 
+        captainId: captainId 
+      }
+    });
+
+    if (!booking) {
+      console.log(`[generateOtp] Booking ${id} NOT FOUND for captain ${captainId}`);
+      return res.status(404).json({ 
+        success: false, 
+        message: "Booking not found or you don't have access" 
+      });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    booking.otp = otp;
+    booking.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await booking.save();
+
+    console.log(`✅ OTP for Booking #${booking.id}: ${otp} (saved successfully)`);
+
+    res.json({ success: true, message: "OTP sent to customer" });
+
+  } catch (error) {
+    console.error("Generate OTP Error:", error);
+    res.status(500).json({ success: false, message: "Failed to generate OTP" });
+  }
+};
+
+// POST /api/captain/bookings/:id/verify-otp
+exports.verifyOtp = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { otp } = req.body;
+    const captainId = req.captain?.id || req.user?.id;
+
+    console.log(`[verifyOtp] Booking ${id} | Captain ID: ${captainId} | OTP: ${otp}`);
+
+    if (!otp || otp.length !== 6) {
+      return res.status(400).json({ success: false, message: "Invalid OTP format" });
+    }
+
+    const booking = await CaptainBooking.findOne({
+      where: { id: id, captainId: captainId }
+    });
+
+    if (!booking) {
+      console.log(`[verifyOtp] Booking ${id} NOT FOUND`);
+      return res.status(404).json({ success: false, message: "Booking not found" });
+    }
+
+    const storedOtp = String(booking.otp || "").trim();
+    const receivedOtp = String(otp).trim();
+
+    console.log(`Verify OTP - Stored: "${storedOtp}" | Received: "${receivedOtp}"`);
+
+    if (booking.otpExpiresAt && new Date(booking.otpExpiresAt) < new Date()) {
+      return res.status(400).json({ success: false, message: "OTP has expired" });
+    }
+
+    if (storedOtp !== receivedOtp) {
+      return res.status(400).json({ success: false, message: "Incorrect OTP" });
+    }
+
+    // Mark as completed
+    booking.status = "Completed";
+    booking.otp = null;
+    booking.otpExpiresAt = null;
+    await booking.save();
+
+    console.log(`✅ Booking #${booking.id} marked as Completed`);
+
+    res.json({ 
+      success: true, 
+      message: "Booking marked as Completed successfully",
+      data: booking 
+    });
+
+  } catch (error) {
+    console.error("Verify OTP Error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// Verify OTP
+// POST /api/captain/bookings/:id/generate-otp
+exports.generateOtp = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const captainId = req.captain?.id || req.user?.id;   // ← Fixed: prefer req.captain
+
+    console.log(`[generateOtp] Booking ${id} for captain ${captainId}`);
+
+    const booking = await CaptainBooking.findOne({
+      where: { id: id, captainId: captainId }
+    });
+
+    if (!booking) {
+      console.log(`[generateOtp] Booking ${id} NOT FOUND for captain ${captainId}`);
+      return res.status(404).json({ success: false, message: "Booking not found" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    booking.otp = otp;
+    booking.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await booking.save();
+
+    console.log(`✅ OTP for Booking #${booking.id}: ${otp} (saved successfully)`);
+
+    res.json({ success: true, message: "OTP sent to customer" });
+
+  } catch (error) {
+    console.error("Generate OTP Error:", error);
+    res.status(500).json({ success: false, message: "Failed to generate OTP" });
+  }
+};
+
+// POST /api/captain/bookings/:id/verify-otp
+exports.verifyOtp = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { otp } = req.body;
+    const captainId = req.captain?.id || req.user?.id;   // ← Fixed here too
+
+    console.log(`[verifyOtp] Booking ${id} for captain ${captainId} | OTP entered: ${otp}`);
+
+    if (!otp || otp.length !== 6) {
+      return res.status(400).json({ success: false, message: "Invalid OTP format" });
+    }
+
+    const booking = await CaptainBooking.findOne({
+      where: { id: id, captainId: captainId }
+    });
+
+    if (!booking) {
+      console.log(`[verifyOtp] Booking ${id} NOT FOUND for captain ${captainId}`);
+      return res.status(404).json({ success: false, message: "Booking not found" });
+    }
+
+    const storedOtp = String(booking.otp || "").trim();
+    const receivedOtp = String(otp).trim();
+
+    console.log(`Verify OTP - Stored: "${storedOtp}" | Received: "${receivedOtp}"`);
+
+    if (booking.otpExpiresAt && new Date(booking.otpExpiresAt) < new Date()) {
+      return res.status(400).json({ success: false, message: "OTP has expired. Please generate a new one." });
+    }
+
+    if (storedOtp !== receivedOtp) {
+      return res.status(400).json({ success: false, message: "Incorrect OTP" });
+    }
+
+    // Success - Complete the booking
+    booking.status = "Completed";
+    booking.otp = null;
+    booking.otpExpiresAt = null;
+    await booking.save();
+
+    console.log(`✅ Booking #${booking.id} successfully marked as Completed`);
+
+    res.json({ 
+      success: true, 
+      message: "Booking marked as Completed successfully",
+      data: booking 
+    });
+
+  } catch (error) {
+    console.error("Verify OTP Error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

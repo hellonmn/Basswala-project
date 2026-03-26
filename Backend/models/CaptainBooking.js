@@ -84,6 +84,15 @@ const CaptainBooking = sequelize.define('CaptainBooking', {
   // Captain notes (internal)
   captainNotes: { type: DataTypes.TEXT, allowNull: true },
 
+  otp: {
+    type: DataTypes.STRING(6),
+    allowNull: true
+  },
+  otpExpiresAt: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+
   // Review
   rating: { type: DataTypes.INTEGER, allowNull: true },
   review: { type: DataTypes.TEXT, allowNull: true },

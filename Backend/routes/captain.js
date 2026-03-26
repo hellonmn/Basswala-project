@@ -7,39 +7,45 @@
 
 const express = require('express');
 const router = express.Router();
+
+// Correct imports
 const { protect } = require('../middleware/auth');
 const { isCaptain } = require('../middleware/captainAuth');
-const c = require('../controllers/captainController');
+const captainController = require('../controllers/captainController');   // ← Fixed import
 
-// All routes: must be authenticated + captain role
+// Apply middleware to ALL routes
 router.use(protect, isCaptain);
 
 // ─── Profile ──────────────────────────────────────────────────
-router.get('/profile', c.getMyProfile);
-router.put('/profile', c.updateMyProfile);
-router.get('/dashboard', c.getDashboard);
+router.get('/profile', captainController.getMyProfile);
+router.put('/profile', captainController.updateMyProfile);
+router.get('/dashboard', captainController.getDashboard);
 
 // ─── DJ Management ────────────────────────────────────────────
-router.get('/djs', c.getMyDJs);                           // GET all my DJs
-router.post('/djs', c.addDJ);                             // POST add a new DJ
-router.get('/djs/:id', c.getDJById);                      // GET single DJ + recent bookings
-router.put('/djs/:id', c.updateDJ);                       // PUT update DJ
-router.put('/djs/:id/availability', c.toggleDJAvailability); // PUT toggle availability
-router.delete('/djs/:id', c.removeDJ);                    // DELETE remove DJ
+router.get('/djs', captainController.getMyDJs);
+router.post('/djs', captainController.addDJ);
+router.get('/djs/:id', captainController.getDJById);
+router.put('/djs/:id', captainController.updateDJ);
+router.put('/djs/:id/availability', captainController.toggleDJAvailability);
+router.delete('/djs/:id', captainController.removeDJ);
 
 // ─── Equipment Management ─────────────────────────────────────
-router.get('/equipment', c.getMyEquipment);               // GET all equipment
-router.post('/equipment', c.addEquipment);                // POST add equipment
-router.get('/equipment/:id', c.getEquipmentById);         // GET single equipment
-router.put('/equipment/:id', c.updateEquipment);          // PUT update equipment
-router.put('/equipment/:id/availability', c.toggleEquipmentAvailability); // PUT toggle
-router.delete('/equipment/:id', c.removeEquipment);       // DELETE remove equipment
+router.get('/equipment', captainController.getMyEquipment);
+router.post('/equipment', captainController.addEquipment);
+router.get('/equipment/:id', captainController.getEquipmentById);
+router.put('/equipment/:id', captainController.updateEquipment);
+router.put('/equipment/:id/availability', captainController.toggleEquipmentAvailability);
+router.delete('/equipment/:id', captainController.removeEquipment);
 
 // ─── Booking Management ───────────────────────────────────────
-router.get('/bookings', c.getMyBookings);                 // GET all bookings with delivery locations
-router.get('/bookings/map', c.getBookingsMap);            // GET bookings for map view
-router.get('/bookings/:id', c.getBookingById);            // GET single booking
-router.put('/bookings/:id/status', c.updateBookingStatus);  // PUT update status
-router.put('/bookings/:id/payment', c.updatePaymentStatus); // PUT update payment
+router.get('/bookings/map', captainController.getBookingsMap);
+router.get('/bookings', captainController.getMyBookings);
+router.get('/bookings/:id', captainController.getBookingById);
+router.put('/bookings/:id/status', captainController.updateBookingStatus);
+router.put('/bookings/:id/payment', captainController.updatePaymentStatus);
+
+// ─── OTP Verification Routes ──────────────────────────────────
+router.post('/bookings/:id/generate-otp', captainController.generateOtp);
+router.post('/bookings/:id/verify-otp', captainController.verifyOtp);
 
 module.exports = router;
